@@ -1,0 +1,176 @@
+{
+  "nav": {
+    "home": "Home",
+    "routes": "Mga Ruta",
+    "fare": "Kalkulador ng Pamasahe",
+    "heatmap": "Heatmap",
+    "payments": "Mga Bayad",
+    "settings": "Mga Setting",
+    "admin": "Admin",
+    "login": "Mag-log In",
+    "register": "Mag-sign Up",
+    "logout": "Mag-log Out"
+  },
+  "buttons": {
+    "submit": "Isumite",
+    "cancel": "Kanselahin",
+    "save": "I-save",
+    "delete": "Burahin",
+    "edit": "I-edit",
+    "confirm": "Kumpirmahin",
+    "back": "Bumalik",
+    "next": "Susunod",
+    "retry": "Subukan Muli",
+    "close": "Isara"
+  },
+  "forms": {
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Kumpirmahin ang Password",
+    "displayName": "Display Name",
+    "required": "Kinakailangan ang field na ito",
+    "invalidEmail": "Maglagay ng wastong email address",
+    "passwordTooShort": "Ang password ay dapat hindi bababa sa 8 character"
+  },
+  "errors": {
+    "generic": "May nangyaring mali. Subukan muli.",
+    "network": "Network error. Suriin ang iyong koneksyon.",
+    "unauthorized": "Kailangan mong mag-log in para magpatuloy.",
+    "forbidden": "Wala kang pahintulot na gawin ito.",
+    "notFound": "Hindi nahanap ang hiniling na resource.",
+    "validation": "Suriin ang iyong input at subukan muli.",
+    "conflict": "Mayroon nang ganitong resource.",
+    "serverError": "Server error. Subukan muli mamaya."
+  },
+  "auth": {
+    "login": "Mag-log In",
+    "loginSubtitle": "Maligayang pagbabalik sa BiyaHero",
+    "register": "Gumawa ng Account",
+    "registerSubtitle": "Sumali sa komunidad ng BiyaHero",
+    "verifyEmail": "I-verify ang Iyong Email",
+    "verifyEmailMessage": "Nagpadala kami ng verification link sa iyong email. Suriin ang iyong inbox.",
+    "forgotPassword": "Nakalimutan ang password?",
+    "noAccount": "Wala pang account?",
+    "hasAccount": "Mayroon nang account?",
+    "emailPlaceholder": "ikaw@example.com",
+    "passwordPlaceholder": "Ilagay ang iyong password",
+    "displayNamePlaceholder": "Ang iyong display name",
+    "roleCommuter": "Pasahero",
+    "roleDriver": "Driver",
+    "selectRole": "Ako ay isang..."
+  },
+  "fare": {
+    "title": "Kalkulador ng Pamasahe",
+    "calculate": "Kalkulahin ang Pamasahe",
+    "origin": "Pinanggalingan",
+    "destination": "Patutunguhan",
+    "vehicleType": "Uri ng Sasakyan",
+    "discount": "Kategorya ng Diskwento",
+    "discountRegular": "Regular",
+    "discountStudent": "Estudyante",
+    "discountSenior": "Senior Citizen",
+    "discountPwd": "PWD",
+    "result": "Tinatayang Pamasahe",
+    "distance": "Distansya",
+    "matrixVersion": "Bersyon ng Fare Matrix",
+    "jeepney": "Jeepney",
+    "uvExpress": "UV Express",
+    "bus": "Bus",
+    "selectOrigin": "Pumili ng pinanggalingan",
+    "selectDestination": "Pumili ng patutunguhan"
+  },
+  "routes": {
+    "title": "Mga Ruta ng Komunidad",
+    "plot": "Mag-plot ng Bagong Ruta",
+    "edit": "I-edit ang Ruta",
+    "submit": "Isumite ang Ruta",
+    "name": "Pangalan ng Ruta",
+    "namePlaceholder": "hal., Cubao papuntang Antipolo",
+    "baseFare": "Base Fare (PHP)",
+    "vehicleType": "Uri ng Sasakyan",
+    "waypoints": "Mga Waypoint",
+    "addWaypoint": "Magdagdag ng Waypoint",
+    "removeWaypoint": "Alisin",
+    "status": "Status",
+    "statusUnverified": "Hindi Pa Na-verify",
+    "statusVerified": "Na-verify Na",
+    "voteAccurate": "Tama Pa Rin",
+    "voteInaccurate": "Hindi Na Tama",
+    "votes": "Mga Boto",
+    "revisions": "Mga Rebisyon",
+    "approve": "Aprubahan ang Rebisyon",
+    "minWaypoints": "Kailangan ng hindi bababa sa 2 waypoint ang isang ruta"
+  },
+  "heatmap": {
+    "title": "Demand Heatmap",
+    "waitingForRide": "Naghihintay ng Sakay",
+    "cancelWaiting": "Kanselahin ang Paghihintay",
+    "demandNearby": "Demand sa Malapit",
+    "noNearbyDemand": "Walang demand sa malapit ngayon",
+    "subscribing": "Kumokonekta sa live demand...",
+    "connected": "Live demand aktibo"
+  },
+  "payments": {
+    "title": "Payment Dashboard",
+    "confirmed": "Nakumpirma ang Bayad",
+    "amount": "Halaga",
+    "payer": "Mula kay",
+    "timestamp": "Oras",
+    "audioPlaying": "Tumutugtog ang audio confirmation",
+    "audioBlocked": "Na-block ang audio — tingnan ang visual confirmation sa itaas",
+    "noPayments": "Walang kamakailang bayad"
+  },
+  "settings": {
+    "title": "Mga Setting",
+    "language": "Wika",
+    "languageEn": "English",
+    "languageFil": "Filipino (Tagalog)",
+    "account": "Account",
+    "deleteAccount": "Burahin ang Account",
+    "deleteAccountWarning": "Hindi na ito maaaring i-undo."
+  },
+  "offline": {
+    "indicator": "Ikaw ay offline",
+    "queuedWrites": "Isi-sync ang mga pagbabago kapag online ka na",
+    "syncing": "Nagsi-sync ng mga pagbabago..."
+  },
+  "swUpdate": {
+    "available": "May bagong bersyon na available",
+    "reload": "I-reload para ma-update"
+  },
+  "common": {
+    "cancel": "Kanselahin"
+  },
+  "validation": {
+    "passwordRequired": "Kinakailangan ang password",
+    "roleRequired": "Pumili ng role"
+  },
+  "admin": {
+    "userManagement": "Pamamahala ng mga User",
+    "refresh": "I-refresh",
+    "noUsers": "Walang nahanap na user.",
+    "forbidden": "Bawal ang access",
+    "forbiddenMessage": "Wala kang pahintulot na i-access ang pahinang ito. Kailangan ng Super Admin role.",
+    "table": {
+      "name": "Pangalan",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Mga Aksyon"
+    },
+    "suspend": "I-suspend",
+    "promote": "Palitan ang Role",
+    "suspendConfirmTitle": "I-suspend ang User",
+    "suspendConfirmMessage": "Sigurado ka bang gusto mong i-suspend si {name} ({email})? Mawawalan sila ng access sa kanilang account.",
+    "suspending": "Sinususpend...",
+    "confirmSuspend": "I-suspend ang User",
+    "promoteTitle": "Palitan ang Role ng User",
+    "promoteMessage": "Pumili ng bagong role para kay {name}. Kailangan mong ilagay muli ang iyong password para kumpirmahin ang pagbabagong ito.",
+    "newRole": "Bagong Role",
+    "reenterPassword": "Ang Iyong Password",
+    "reenterPasswordHint": "Ilagay muli ang iyong sariling password para kumpirmahin ang pagbabago ng role.",
+    "passwordPlaceholder": "Ilagay ang iyong password",
+    "promoting": "Ina-update...",
+    "confirmPromote": "Kumpirmahin ang Pagbabago ng Role"
+  }
+}

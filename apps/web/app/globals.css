@@ -1,0 +1,21 @@
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #2563eb;
+    --color-primary-dark: #1d4ed8;
+    --color-background: #ffffff;
+    --color-foreground: #111827;
+  }
+}
+
+@layer utilities {
+  /* Minimum touch target size for accessibility (44x44px) */
+  .touch-target {
+    @apply min-w-touch min-h-touch;
+  }
+}

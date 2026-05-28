@@ -1,0 +1,54 @@
+{
+  "version": "v1-2024",
+  "effectiveDate": "2024-01-01T00:00:00Z",
+  "matrices": [
+    {
+      "vehicleType": "jeepney",
+      "minFareCentavos": 1300,
+      "minFareKm": 4.0,
+      "perKmCentavos": 180,
+      "discountPercentByCategory": {
+        "regular": 0,
+        "student": 20,
+        "senior": 20,
+        "pwd": 20
+      }
+    },
+    {
+      "vehicleType": "bus",
+      "minFareCentavos": 1500,
+      "minFareKm": 5.0,
+      "perKmCentavos": 265,
+      "discountPercentByCategory": {
+        "regular": 0,
+        "student": 20,
+        "senior": 20,
+        "pwd": 20
+      }
+    },
+    {
+      "vehicleType": "uv_express",
+      "minFareCentavos": 3000,
+      "minFareKm": 5.0,
+      "perKmCentavos": 200,
+      "discountPercentByCategory": {
+        "regular": 0,
+        "student": 20,
+        "senior": 20,
+        "pwd": 20
+      }
+    },
+    {
+      "vehicleType": "tricycle",
+      "minFareCentavos": 4000,
+      "minFareKm": 2.0,
+      "perKmCentavos": 500,
+      "discountPercentByCategory": {
+        "regular": 0,
+        "student": 20,
+        "senior": 20,
+        "pwd": 20
+      }
+    }
+  ]
+}

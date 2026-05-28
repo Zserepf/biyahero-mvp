@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <NoWarn>CA1848;CA1716;CA1707;CA1854;CA1852;CA1001;CA1305;CA2201;CA1861;IL2026;IL3050;CS0618;CS8620;CS8767</NoWarn>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>false</EnableAotAnalyzer>
+  </PropertyGroup>
+</Project>

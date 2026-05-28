@@ -1,0 +1,176 @@
+{
+  "nav": {
+    "home": "Home",
+    "routes": "Routes",
+    "fare": "Fare Calculator",
+    "heatmap": "Heatmap",
+    "payments": "Payments",
+    "settings": "Settings",
+    "admin": "Admin",
+    "login": "Log In",
+    "register": "Sign Up",
+    "logout": "Log Out"
+  },
+  "buttons": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "retry": "Retry",
+    "close": "Close"
+  },
+  "forms": {
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "displayName": "Display Name",
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordTooShort": "Password must be at least 8 characters"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You need to log in to continue.",
+    "forbidden": "You don't have permission to do this.",
+    "notFound": "The requested resource was not found.",
+    "validation": "Please check your input and try again.",
+    "conflict": "This resource already exists.",
+    "serverError": "Server error. Please try again later."
+  },
+  "auth": {
+    "login": "Log In",
+    "loginSubtitle": "Welcome back to BiyaHero",
+    "register": "Create Account",
+    "registerSubtitle": "Join the BiyaHero community",
+    "verifyEmail": "Verify Your Email",
+    "verifyEmailMessage": "We sent a verification link to your email. Please check your inbox.",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "Enter your password",
+    "displayNamePlaceholder": "Your display name",
+    "roleCommuter": "Commuter",
+    "roleDriver": "Driver",
+    "selectRole": "I am a..."
+  },
+  "fare": {
+    "title": "Fare Calculator",
+    "calculate": "Calculate Fare",
+    "origin": "Origin",
+    "destination": "Destination",
+    "vehicleType": "Vehicle Type",
+    "discount": "Discount Category",
+    "discountRegular": "Regular",
+    "discountStudent": "Student",
+    "discountSenior": "Senior Citizen",
+    "discountPwd": "PWD",
+    "result": "Estimated Fare",
+    "distance": "Distance",
+    "matrixVersion": "Fare Matrix Version",
+    "jeepney": "Jeepney",
+    "uvExpress": "UV Express",
+    "bus": "Bus",
+    "selectOrigin": "Select origin point",
+    "selectDestination": "Select destination point"
+  },
+  "routes": {
+    "title": "Community Routes",
+    "plot": "Plot New Route",
+    "edit": "Edit Route",
+    "submit": "Submit Route",
+    "name": "Route Name",
+    "namePlaceholder": "e.g., Cubao to Antipolo",
+    "baseFare": "Base Fare (PHP)",
+    "vehicleType": "Vehicle Type",
+    "waypoints": "Waypoints",
+    "addWaypoint": "Add Waypoint",
+    "removeWaypoint": "Remove",
+    "status": "Status",
+    "statusUnverified": "Unverified",
+    "statusVerified": "Verified",
+    "voteAccurate": "Still Accurate",
+    "voteInaccurate": "No Longer Accurate",
+    "votes": "Votes",
+    "revisions": "Revisions",
+    "approve": "Approve Revision",
+    "minWaypoints": "A route needs at least 2 waypoints"
+  },
+  "heatmap": {
+    "title": "Demand Heatmap",
+    "waitingForRide": "Waiting for a Ride",
+    "cancelWaiting": "Cancel Waiting",
+    "demandNearby": "Demand Nearby",
+    "noNearbyDemand": "No nearby demand right now",
+    "subscribing": "Connecting to live demand...",
+    "connected": "Live demand active"
+  },
+  "payments": {
+    "title": "Payment Dashboard",
+    "confirmed": "Payment Confirmed",
+    "amount": "Amount",
+    "payer": "From",
+    "timestamp": "Time",
+    "audioPlaying": "Audio confirmation playing",
+    "audioBlocked": "Audio blocked — see visual confirmation above",
+    "noPayments": "No recent payments"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languageEn": "English",
+    "languageFil": "Filipino (Tagalog)",
+    "account": "Account",
+    "deleteAccount": "Delete Account",
+    "deleteAccountWarning": "This action cannot be undone."
+  },
+  "offline": {
+    "indicator": "You are offline",
+    "queuedWrites": "Changes will sync when you're back online",
+    "syncing": "Syncing changes..."
+  },
+  "swUpdate": {
+    "available": "A new version is available",
+    "reload": "Reload to update"
+  },
+  "common": {
+    "cancel": "Cancel"
+  },
+  "validation": {
+    "passwordRequired": "Password is required",
+    "roleRequired": "Please select a role"
+  },
+  "admin": {
+    "userManagement": "User Management",
+    "refresh": "Refresh",
+    "noUsers": "No users found.",
+    "forbidden": "Access denied",
+    "forbiddenMessage": "You do not have permission to access this page. Super Admin role is required.",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "suspend": "Suspend",
+    "promote": "Change Role",
+    "suspendConfirmTitle": "Suspend User",
+    "suspendConfirmMessage": "Are you sure you want to suspend {name} ({email})? They will lose access to their account.",
+    "suspending": "Suspending...",
+    "confirmSuspend": "Suspend User",
+    "promoteTitle": "Change User Role",
+    "promoteMessage": "Select a new role for {name}. You must re-enter your password to confirm this change.",
+    "newRole": "New Role",
+    "reenterPassword": "Your Password",
+    "reenterPasswordHint": "Re-enter your own password to confirm this role change.",
+    "passwordPlaceholder": "Enter your password",
+    "promoting": "Updating...",
+    "confirmPromote": "Confirm Role Change"
+  }
+}
