@@ -28,6 +28,7 @@
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "displayName": "Display Name",
+    "role": "I am a...",
     "required": "This field is required",
     "invalidEmail": "Please enter a valid email address",
     "passwordTooShort": "Password must be at least 8 characters"

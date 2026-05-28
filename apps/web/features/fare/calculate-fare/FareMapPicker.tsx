@@ -77,7 +77,7 @@ export function FareMapPicker({
   onDestinationChange,
 }: FareMapPickerProps) {
   return (
-    <div className="relative w-full overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+    <div className="relative w-full overflow-hidden rounded-xl border border-white/10">
       <MapContainer
         center={[14.5995, 120.9842]}
         zoom={12}

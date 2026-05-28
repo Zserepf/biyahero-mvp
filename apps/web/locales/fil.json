@@ -28,6 +28,7 @@
     "password": "Password",
     "confirmPassword": "Kumpirmahin ang Password",
     "displayName": "Display Name",
+    "role": "Ako ay isang...",
     "required": "Kinakailangan ang field na ito",
     "invalidEmail": "Maglagay ng wastong email address",
     "passwordTooShort": "Ang password ay dapat hindi bababa sa 8 character"

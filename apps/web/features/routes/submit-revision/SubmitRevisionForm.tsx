@@ -107,14 +107,14 @@ export function SubmitRevisionForm({ routeId, onSuccess }: SubmitRevisionFormPro
   if (routeLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <p className="text-sm text-gray-500">Loading route data...</p>
+        <p className="text-sm text-gray-500 dark:text-white/40">Loading route data...</p>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-gray-600 dark:text-white/60">
         Edit the waypoints below. Your changes will be submitted as a pending revision
         for community review.
       </p>
@@ -127,7 +127,7 @@ export function SubmitRevisionForm({ routeId, onSuccess }: SubmitRevisionFormPro
         height="350px"
       />
       {errors.waypoints && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
           {errors.waypoints}
         </p>
       )}
@@ -135,14 +135,14 @@ export function SubmitRevisionForm({ routeId, onSuccess }: SubmitRevisionFormPro
       {/* Waypoint list */}
       {waypoints.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-medium text-gray-700">
+          <p className="text-sm font-medium text-gray-700 dark:text-white/80">
             Waypoints ({waypoints.length})
           </p>
           <ul className="flex flex-col gap-1" aria-label="Revision waypoints">
             {waypoints.map((wp, index) => (
               <li
                 key={`rev-wp-${index}`}
-                className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-2 text-sm"
+                className="flex items-center justify-between rounded-md bg-gray-50 dark:bg-white/5 px-3 py-2 text-sm text-gray-800 dark:text-white/70"
               >
                 <span>
                   {wp.name || `Waypoint ${index + 1}`} — {wp.lat.toFixed(5)},{' '}
@@ -151,7 +151,7 @@ export function SubmitRevisionForm({ routeId, onSuccess }: SubmitRevisionFormPro
                 <button
                   type="button"
                   onClick={() => handleRemoveWaypoint(index)}
-                  className="min-h-[44px] min-w-[44px] rounded-md text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200"
+                  className="min-h-[44px] min-w-[44px] rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-200 dark:focus:ring-red-500/30"
                   aria-label={`Remove waypoint ${index + 1}`}
                 >
                   ✕
@@ -164,7 +164,7 @@ export function SubmitRevisionForm({ routeId, onSuccess }: SubmitRevisionFormPro
 
       {/* Form-level error */}
       {errors.form && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
           {errors.form}
         </p>
       )}
@@ -173,7 +173,7 @@ export function SubmitRevisionForm({ routeId, onSuccess }: SubmitRevisionFormPro
       <button
         type="submit"
         disabled={submitRevision.isPending || waypoints.length < 2}
-        className="min-h-[44px] rounded-lg bg-blue-600 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:cursor-not-allowed disabled:bg-gray-400"
+        className="min-h-[44px] rounded-lg bg-blue-600 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500/40 disabled:cursor-not-allowed disabled:bg-gray-400"
         aria-label="Submit revision"
       >
         {submitRevision.isPending ? 'Submitting...' : 'Submit Revision'}

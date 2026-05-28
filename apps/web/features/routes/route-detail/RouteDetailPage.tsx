@@ -24,7 +24,7 @@ export function RouteDetailPage({ routeId, onEditRoute }: RouteDetailPageProps) 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <p className="text-sm text-gray-500" aria-live="polite">
+        <p className="text-sm text-gray-500 dark:text-white/40" aria-live="polite">
           Loading route...
         </p>
       </div>
@@ -34,7 +34,7 @@ export function RouteDetailPage({ routeId, onEditRoute }: RouteDetailPageProps) 
   if (error || !route) {
     return (
       <div className="flex items-center justify-center p-8">
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
           Failed to load route. Please try again.
         </p>
       </div>
@@ -45,16 +45,16 @@ export function RouteDetailPage({ routeId, onEditRoute }: RouteDetailPageProps) 
     <div className="flex flex-col gap-4 p-4">
       {/* Route header */}
       <div className="flex flex-col gap-1">
-        <h1 className="text-xl font-bold text-gray-900">{route.name}</h1>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{route.name}</h1>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-white/60">
+          <span className="rounded-full bg-blue-100 dark:bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-300">
             {route.vehicleType}
           </span>
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
               route.status === 'verified'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-yellow-100 text-yellow-800'
+                ? 'bg-green-100 dark:bg-green-500/20 text-green-800 dark:text-green-300'
+                : 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300'
             }`}
           >
             {route.status}
@@ -68,7 +68,7 @@ export function RouteDetailPage({ routeId, onEditRoute }: RouteDetailPageProps) 
 
       {/* Waypoint list */}
       <div className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-gray-800">
+        <h2 className="text-base font-semibold text-gray-800 dark:text-white">
           Stops ({route.waypoints.length})
         </h2>
         <ol className="flex flex-col gap-1" aria-label="Route stops">
@@ -77,13 +77,13 @@ export function RouteDetailPage({ routeId, onEditRoute }: RouteDetailPageProps) 
             .map((wp, index) => (
               <li
                 key={`detail-wp-${index}`}
-                className="flex items-center gap-2 rounded-md bg-gray-50 px-3 py-2 text-sm"
+                className="flex items-center gap-2 rounded-md bg-gray-50 dark:bg-white/5 px-3 py-2 text-sm"
               >
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
                   {index + 1}
                 </span>
-                <span>{wp.name || `Stop ${index + 1}`}</span>
-                <span className="ml-auto text-xs text-gray-400">
+                <span className="text-gray-800 dark:text-white">{wp.name || `Stop ${index + 1}`}</span>
+                <span className="ml-auto text-xs text-gray-400 dark:text-white/40">
                   {wp.lat.toFixed(4)}, {wp.lng.toFixed(4)}
                 </span>
               </li>
@@ -99,7 +99,7 @@ export function RouteDetailPage({ routeId, onEditRoute }: RouteDetailPageProps) 
         <button
           type="button"
           onClick={() => onEditRoute(routeId)}
-          className="min-h-[44px] rounded-lg border border-blue-600 px-4 py-2 text-base font-medium text-blue-600 transition-colors hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          className="min-h-[44px] rounded-lg border border-blue-600 px-4 py-2 text-base font-medium text-blue-600 dark:text-blue-400 transition-colors hover:bg-blue-50 dark:hover:bg-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500/30"
           aria-label="Edit this route"
         >
           Suggest Edit (Submit Revision)

@@ -1,5 +1,5 @@
-import { DriverHeatmapPage } from '@/features/heatmap/driver-heatmap/DriverHeatmapPage';
+import { redirect } from 'next/navigation';
 
-export default function DriverPage() {
-  return <DriverHeatmapPage />;
+export default function DriverRootPage() {
+  redirect('/driver/heatmap');
 }

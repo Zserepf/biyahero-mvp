@@ -5,11 +5,31 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Light mode (default) ─────────────────────────────────────── */
   :root {
     --color-primary: #2563eb;
     --color-primary-dark: #1d4ed8;
     --color-background: #ffffff;
     --color-foreground: #111827;
+    --color-surface: #f8fafc;
+    --color-border: #e2e8f0;
+    --color-muted: #64748b;
+  }
+
+  /* ── Dark mode ────────────────────────────────────────────────── */
+  .dark {
+    --color-primary: #3b82f6;
+    --color-primary-dark: #2563eb;
+    --color-background: #0f172a;
+    --color-foreground: #f1f5f9;
+    --color-surface: #1e293b;
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-muted: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Smooth theme transitions */
+  html {
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 

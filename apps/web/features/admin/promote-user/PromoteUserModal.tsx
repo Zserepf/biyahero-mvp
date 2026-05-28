@@ -96,22 +96,22 @@ export function PromoteUserModal({ user, onClose, onSuccess }: PromoteUserModalP
       aria-modal="true"
       aria-labelledby="promote-dialog-title"
     >
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-lg bg-white dark:bg-slate-800 p-6 shadow-xl ring-1 ring-black/10 dark:ring-white/10">
         <h2
           id="promote-dialog-title"
-          className="text-lg font-semibold text-gray-900"
+          className="text-lg font-semibold text-gray-900 dark:text-white"
         >
           {t('admin.promoteTitle')}
         </h2>
 
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-gray-600 dark:text-white/60">
           {t('admin.promoteMessage', { name: user.displayName })}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4" noValidate>
           {/* Server error */}
           {error && (
-            <div role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+            <div role="alert" className="rounded-md bg-red-50 dark:bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-400">
               {error}
             </div>
           )}
@@ -120,7 +120,7 @@ export function PromoteUserModal({ user, onClose, onSuccess }: PromoteUserModalP
           <div>
             <label
               htmlFor="promote-role"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700 dark:text-white/80"
             >
               {t('admin.newRole')}
             </label>
@@ -130,7 +130,7 @@ export function PromoteUserModal({ user, onClose, onSuccess }: PromoteUserModalP
               onChange={(e) => handleChange('newRole', e.target.value)}
               aria-invalid={!!fieldErrors.newRole}
               aria-describedby={fieldErrors.newRole ? 'promote-role-error' : undefined}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2.5 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 dark:border-white/10 bg-white dark:bg-slate-700 px-3 py-2.5 text-base text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               {AVAILABLE_ROLES.filter((r) => r.value !== user.role).map((role) => (
                 <option key={role.value} value={role.value}>
@@ -139,7 +139,7 @@ export function PromoteUserModal({ user, onClose, onSuccess }: PromoteUserModalP
               ))}
             </select>
             {fieldErrors.newRole && (
-              <p id="promote-role-error" className="mt-1 text-sm text-red-600">
+              <p id="promote-role-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
                 {fieldErrors.newRole}
               </p>
             )}
@@ -149,11 +149,11 @@ export function PromoteUserModal({ user, onClose, onSuccess }: PromoteUserModalP
           <div>
             <label
               htmlFor="promote-password"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700 dark:text-white/80"
             >
               {t('admin.reenterPassword')}
             </label>
-            <p className="mt-0.5 text-xs text-gray-500">
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-white/40">
               {t('admin.reenterPasswordHint')}
             </p>
             <input
@@ -167,10 +167,10 @@ export function PromoteUserModal({ user, onClose, onSuccess }: PromoteUserModalP
               placeholder={t('admin.passwordPlaceholder')}
               aria-invalid={!!fieldErrors.password}
               aria-describedby={fieldErrors.password ? 'promote-password-error' : undefined}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2.5 text-base shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 dark:border-white/10 bg-white dark:bg-slate-700 px-3 py-2.5 text-base text-gray-900 dark:text-white shadow-sm placeholder:text-gray-400 dark:placeholder:text-white/30 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             {fieldErrors.password && (
-              <p id="promote-password-error" className="mt-1 text-sm text-red-600">
+              <p id="promote-password-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
                 {fieldErrors.password}
               </p>
             )}
@@ -182,14 +182,14 @@ export function PromoteUserModal({ user, onClose, onSuccess }: PromoteUserModalP
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="min-h-[44px] min-w-[44px] rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              className="min-h-[44px] min-w-[44px] rounded-md border border-gray-300 dark:border-white/10 px-4 py-2 text-sm font-medium text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="min-h-[44px] min-w-[44px] rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              className="min-h-[44px] min-w-[44px] rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50"
             >
               {isLoading ? (
                 <span className="inline-flex items-center gap-2">

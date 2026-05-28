@@ -249,14 +249,60 @@ k6 run heatmap-aggregation.js
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | .NET 8, Dapper, PostgreSQL + PostGIS, DynamoDB, Argon2id, JWT |
-| Frontend | Next.js 14, React 18, Tailwind CSS, Zustand, TanStack Query, Leaflet |
-| PWA | next-pwa, IndexedDB (offline queue) |
-| i18n | next-intl (English + Filipino) |
-| Testing | xUnit + FsCheck, Vitest + Testing Library + axe-core, Playwright, k6 |
-| Infrastructure | AWS CDK (Lambda, API Gateway, DynamoDB, RDS, CloudFront, SES) |
+### Backend
+
+| Technology | Purpose |
+|------------|---------|
+| **.NET 8** | Web API runtime. Chosen for high throughput, minimal overhead, and first-class async support — critical for WebSocket fan-out and concurrent REST requests. |
+| **Feature-Sliced Architecture** | Each API feature (Register, Login, Fare, Heatmap, etc.) lives in its own folder with its own endpoint, handler, and request/response types. Adding a feature never touches existing code. |
+| **Dapper** | Lightweight micro-ORM for raw SQL over PostgreSQL. Gives full control over spatial queries (PostGIS) without the overhead of EF Core's change tracker. |
+| **PostgreSQL + PostGIS** | Relational store for users, routes, and waypoints. PostGIS extension enables native geospatial queries — bounding-box route search and Haversine distance calculation run as single SQL statements. |
+| **DynamoDB** | NoSQL store for demand-ping events and heatmap tiles. Chosen for its sub-millisecond write latency and pay-per-request pricing, which fits the 500k pings/month Free Tier budget. |
+| **Argon2id** | Password hashing algorithm. Memory-hard by design, making brute-force and GPU attacks impractical. The current OWASP-recommended choice over bcrypt and scrypt. |
+| **JWT (HS256)** | Stateless access tokens for API authentication. Short-lived access tokens + longer-lived refresh tokens stored in HttpOnly cookies prevent XSS token theft. |
+| **AWS SES** | Transactional email for account verification. Serverless, pay-per-email, and integrates directly with Lambda — no SMTP server to manage. |
+| **AWS Lambda** | Serverless compute for the API. Scales to zero when idle (Free Tier friendly) and scales out automatically under load without provisioning servers. |
+| **AWS API Gateway** | Managed HTTP and WebSocket gateway in front of Lambda. Handles TLS termination, throttling, and WebSocket connection management so the application code doesn't have to. |
+
+### Frontend
+
+| Technology | Purpose |
+|------------|---------|
+| **Next.js 14** | React framework with App Router. Provides file-based routing, server components for fast initial loads, and built-in image/font optimisation. |
+| **React 18** | UI library. Concurrent rendering and Suspense boundaries keep the map and data-heavy pages responsive during async operations. |
+| **TypeScript** | Static typing across the entire frontend. Catches API contract mismatches at compile time rather than at runtime in production. |
+| **Tailwind CSS** | Utility-first CSS framework. Enables rapid UI iteration without context-switching to separate stylesheets. All styles are co-located with components and tree-shaken in production. |
+| **Dark / Light / System Theme** | Three-way theme toggle (light → dark → system) powered by a Zustand store, `localStorage` persistence, and Tailwind's `darkMode: "class"` strategy. Respects OS preference automatically in system mode. |
+| **Zustand** | Minimal global state manager. Used for client-only state (theme preference, language preference, toast queue) that doesn't belong in the server cache. Avoids the boilerplate of Redux for small shared state. |
+| **TanStack Query (React Query)** | Server state management. Handles caching, background refetching, optimistic updates, and loading/error states for all API calls. Components never call `fetch` directly. |
+| **Leaflet + React-Leaflet** | Interactive maps for route plotting, fare pin picking, and the demand heatmap. Open-source, mobile-friendly, and works offline with cached tiles. |
+| **Zod** | Runtime schema validation for all form inputs. Provides instant client-side feedback before a network request is made, while the backend remains the authoritative source of truth. |
+| **next-intl** | Internationalisation for English and Filipino (Tagalog). Translation keys are type-safe and co-located with the feature that uses them. |
+| **next-pwa** | Service Worker generation for offline support. Caches static assets and API responses so the app remains usable on flaky Philippine mobile connections. |
+| **IndexedDB (offline queue)** | Persists form submissions (demand pings, route plots) locally when the device is offline. The queue drains automatically when connectivity is restored. |
+| **Axios** | HTTP client with a single configured instance. Interceptors handle auth token injection, 401 refresh-token rotation, and consistent error shape transformation globally. |
+
+### Testing
+
+| Technology | Purpose |
+|------------|---------|
+| **xUnit** | Primary backend test runner. Integrates cleanly with .NET's built-in DI and supports parallel test execution. |
+| **FsCheck** | Property-based testing for the backend. Generates hundreds of random inputs to verify fare calculation invariants (rounding, discount bounds, distance edge cases) that hand-written examples would miss. |
+| **Vitest** | Frontend unit and integration test runner. Vite-native, so it shares the same module resolution and TypeScript config as the app — no separate Babel setup. |
+| **Testing Library** | Component testing utilities. Encourages testing from the user's perspective (by role, label, text) rather than implementation details. |
+| **axe-core** | Automated accessibility auditing integrated into Vitest tests. Catches WCAG 2.1 AA violations (missing labels, contrast failures, focus traps) on every component render. |
+| **Playwright** | End-to-end browser testing. Runs full user journeys (register → login → plot route → calculate fare) against a real browser and running backend. |
+| **k6** | Load testing for performance requirements. Three scripts validate: REST p95 ≤ 400ms under 50 VUs, WebSocket fan-out with 200 concurrent connections and zero dropped messages, and heatmap aggregation p95 ≤ 500ms. |
+| **MSW (Mock Service Worker)** | API mocking in frontend tests. Intercepts real `fetch`/`axios` calls at the network level so tests exercise the full request/response cycle without a running backend. |
+
+### Infrastructure
+
+| Technology | Purpose |
+|------------|---------|
+| **AWS CDK (C#)** | Infrastructure-as-code using the same language as the backend. Defines Lambda functions, API Gateway, DynamoDB tables, RDS (PostgreSQL), CloudFront distribution, and SES configuration as typed C# constructs. |
+| **Amazon CloudFront** | CDN for the Next.js PWA static assets. Serves the app from edge locations closest to Philippine users, reducing latency for the initial page load. |
+| **Amazon RDS (PostgreSQL)** | Managed PostgreSQL with PostGIS. Handles automated backups, minor version patching, and Multi-AZ failover without manual DBA work. |
+| **Docker Compose** | Local development infrastructure. Spins up PostgreSQL + PostGIS and DynamoDB Local in containers so developers can run the full stack without cloud credentials. |
 
 ## License
 

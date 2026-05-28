@@ -67,10 +67,10 @@ function ConnectionBadge({ status }: { status: string }) {
   return (
     <div className="flex items-center gap-2" aria-live="polite">
       <span
-        className={`inline-block h-3 w-3 rounded-full ${config.color}`}
+        className={`inline-block h-2.5 w-2.5 rounded-full ${config.color}`}
         aria-hidden="true"
       />
-      <span className="text-xs font-medium text-gray-700">{config.text}</span>
+      <span className="text-xs font-medium text-gray-600 dark:text-white/70">{config.text}</span>
     </div>
   );
 }
@@ -129,17 +129,17 @@ export function CommuterHeatmapPage() {
   // ─── Render ────────────────────────────────────────────────────────────
 
   return (
-    <main className="flex h-full flex-col">
+    <main className="flex h-full flex-col bg-gray-50 dark:bg-slate-900">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-        <h1 className="text-lg font-bold text-gray-900">Waiting for a Ride</h1>
+      <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 px-4 py-3 backdrop-blur-md">
+        <h1 className="text-base font-bold text-gray-900 dark:text-white">Waiting for a Ride</h1>
         <ConnectionBadge status={status} />
       </div>
 
       {/* Error messages */}
       {(error || locationError) && (
         <div
-          className="mx-4 mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700"
+          className="mx-4 mt-3 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
           role="alert"
           aria-live="assertive"
         >
@@ -154,14 +154,17 @@ export function CommuterHeatmapPage() {
         aria-label="Commuter location map"
       >
         {geoLoading ? (
-          <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-gray-500">Getting your location...</p>
+          <div className="flex h-full items-center justify-center bg-gray-50 dark:bg-slate-900">
+            <div className="flex flex-col items-center gap-3">
+              <span className="h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+              <p className="text-sm text-gray-400 dark:text-white/40">Getting your location…</p>
+            </div>
           </div>
         ) : (
           <MapContainer
             center={userLocation}
             zoom={PH_ZOOM}
-            className="h-full w-full"
+            style={{ height: '100%', width: '100%' }}
             scrollWheelZoom={true}
           >
             <TileLayer
@@ -194,12 +197,12 @@ export function CommuterHeatmapPage() {
       </div>
 
       {/* Controls */}
-      <div className="border-t border-gray-200 bg-white px-4 py-4">
+      <div className="border-t border-black/10 dark:border-white/10 bg-white dark:bg-slate-900 px-4 py-4">
         {/* Vehicle type selector */}
         <div className="mb-3">
           <label
             htmlFor="vehicle-type-select"
-            className="mb-1 block text-sm font-medium text-gray-700"
+            className="mb-1.5 block text-sm font-medium text-gray-600 dark:text-white/70"
           >
             Vehicle Type
           </label>
@@ -208,7 +211,7 @@ export function CommuterHeatmapPage() {
             value={vehicleType}
             onChange={(e) => setVehicleType(e.target.value as VehicleType)}
             disabled={!!activePing}
-            className="min-h-[44px] w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:bg-gray-100 disabled:text-gray-500"
+            className="min-h-[44px] w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:opacity-40 transition"
             aria-label="Select vehicle type"
           >
             {VEHICLE_OPTIONS.map((opt) => (
@@ -224,7 +227,7 @@ export function CommuterHeatmapPage() {
           <button
             onClick={handleSubmitPing}
             disabled={status !== 'connected'}
-            className="min-h-[44px] w-full rounded-lg bg-amber-500 px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-300 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+            className="min-h-[44px] w-full rounded-xl bg-amber-500 px-4 py-3 text-base font-semibold text-white shadow-lg shadow-amber-500/20 transition hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Signal that you are waiting for a ride here"
           >
             I&apos;m Waiting Here
@@ -232,19 +235,19 @@ export function CommuterHeatmapPage() {
         ) : (
           <div className="space-y-2">
             <div
-              className="rounded-lg bg-amber-50 p-3 text-center text-sm text-amber-800"
+              className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-center"
               role="status"
               aria-live="polite"
             >
-              <p className="font-medium">Your ping is active!</p>
-              <p className="text-xs text-amber-600">
+              <p className="text-sm font-semibold text-amber-500 dark:text-amber-400">Your ping is active!</p>
+              <p className="mt-0.5 text-xs text-amber-500/70 dark:text-amber-400/70">
                 Nearby drivers can see your demand signal.
               </p>
             </div>
             <button
               onClick={handleCancel}
               disabled={status !== 'connected'}
-              className="min-h-[44px] w-full rounded-lg border-2 border-red-500 bg-white px-4 py-3 text-base font-semibold text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-500"
+              className="min-h-[44px] w-full rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-base font-semibold text-red-500 dark:text-red-400 transition hover:bg-red-500/20 focus:outline-none focus:ring-2 focus:ring-red-400/30 disabled:cursor-not-allowed disabled:opacity-40"
               aria-label="Cancel your waiting signal"
             >
               Cancel Waiting

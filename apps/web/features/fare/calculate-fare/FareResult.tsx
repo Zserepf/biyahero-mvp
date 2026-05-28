@@ -26,40 +26,25 @@ function formatPhp(amount: number): string {
 
 export function FareResult({ result }: FareResultProps) {
   return (
-    <section
-      aria-labelledby="fare-result-heading"
-      className="mt-6 rounded-lg border border-green-200 bg-green-50 p-6"
-    >
-      <h2
-        id="fare-result-heading"
-        className="mb-4 text-lg font-semibold text-green-900"
-      >
+    <section aria-labelledby="fare-result-heading">
+      <h2 id="fare-result-heading" className="mb-4 text-sm font-bold uppercase tracking-widest text-white/40">
         Fare Estimate
       </h2>
 
+      {/* Big fare display */}
+      <div className="mb-4 flex items-baseline justify-between rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4">
+        <span className="text-sm font-medium text-emerald-400">Total Fare</span>
+        <span className="text-3xl font-bold text-emerald-400">{formatPhp(result.amountPhp)}</span>
+      </div>
+
       <dl className="space-y-3">
-        {/* Fare Amount */}
-        <div className="flex items-baseline justify-between">
-          <dt className="text-sm font-medium text-green-700">Fare</dt>
-          <dd className="text-2xl font-bold text-green-900">
-            {formatPhp(result.amountPhp)}
-          </dd>
+        <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+          <dt className="text-sm text-white/60">Distance</dt>
+          <dd className="text-sm font-semibold text-white">{result.distanceKm.toFixed(2)} km</dd>
         </div>
-
-        {/* Distance */}
-        <div className="flex items-baseline justify-between">
-          <dt className="text-sm font-medium text-green-700">Distance</dt>
-          <dd className="text-base font-medium text-green-800">
-            {result.distanceKm.toFixed(2)} km
-          </dd>
-        </div>
-
-        {/* Matrix Version */}
-        <div className="flex items-baseline justify-between">
-          <dt className="text-sm font-medium text-green-700">
-            Matrix Version
-          </dt>
-          <dd className="text-sm text-green-600">{result.matrixVersion}</dd>
+        <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+          <dt className="text-sm text-white/60">Matrix Version</dt>
+          <dd className="text-sm font-semibold text-white">{result.matrixVersion}</dd>
         </div>
       </dl>
     </section>

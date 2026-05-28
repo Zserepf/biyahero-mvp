@@ -57,30 +57,39 @@ public sealed class RegisterHandler
         // Hash password with Argon2id
         var passwordHash = _passwordHasher.Hash(request.Password);
 
-        // Create user with PendingVerification status
+        // Create user — Active immediately in Development so login works without email verification.
+        // In Production, set Status = PendingVerification and require email confirmation.
         var role = Enum.Parse<UserRole>(request.Role, ignoreCase: true);
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        var initialStatus = isDevelopment ? UserStatus.Active : UserStatus.PendingVerification;
+
         var user = new User
         {
             Email = request.Email.Trim().ToLowerInvariant(),
             PasswordHash = passwordHash,
             Role = role,
-            Status = UserStatus.PendingVerification,
+            Status = initialStatus,
             DisplayName = request.DisplayName.Trim()
         };
 
         await _userRepository.CreateAsync(user);
 
-        // Generate a URL-safe verification token
-        var verificationToken = GenerateVerificationToken();
-        await _tokenStore.StoreTokenAsync(user.Id, verificationToken, VerificationTokenExpiry);
+        if (!isDevelopment)
+        {
+            // Generate a URL-safe verification token and send email (Production only)
+            var verificationToken = GenerateVerificationToken();
+            await _tokenStore.StoreTokenAsync(user.Id, verificationToken, VerificationTokenExpiry);
+            await _emailService.SendVerificationEmailAsync(user.Email, verificationToken);
+        }
 
-        // Send verification email via SES
-        await _emailService.SendVerificationEmailAsync(user.Email, verificationToken);
+        var message = isDevelopment
+            ? "Account created successfully. You can now log in."
+            : "Registration successful. Please check your email to verify your account.";
 
         return new RegisterResponse(
             UserId: user.Id,
             Email: user.Email,
-            Message: "Registration successful. Please check your email to verify your account."
+            Message: message
         );
     }
 

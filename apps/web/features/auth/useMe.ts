@@ -40,7 +40,13 @@ export function useMe(): UseMeReturn {
 
     try {
       const response = await apiClient.get<MeResponse>(API_ENDPOINTS.AUTH.ME);
-      setUser(response.data);
+      // Normalize role from PascalCase (backend enum) to lowercase snake_case (frontend convention)
+      // e.g. "Commuter" → "commuter", "SuperAdmin" → "super_admin"
+      const raw = response.data;
+      const normalizedRole = raw.role
+        .replace(/([A-Z])/g, (m, l, offset) => (offset > 0 ? '_' : '') + l.toLowerCase())
+        .toLowerCase() as MeResponse['role'];
+      setUser({ ...raw, role: normalizedRole });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         // Token expired or invalid — clear it

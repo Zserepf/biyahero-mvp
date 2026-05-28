@@ -1,5 +1,5 @@
-import { CalculateFarePage } from '@/features/fare/calculate-fare/CalculateFarePage';
+import { redirect } from 'next/navigation';
 
-export default function FarePage() {
-  return <CalculateFarePage />;
+export default function FareLegacyRedirect() {
+  redirect('/commuter/fare');
 }

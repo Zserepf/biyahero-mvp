@@ -104,7 +104,7 @@ export function DriverPaymentDashboardPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 p-4">
+    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900 p-4">
       {/* Audio fallback banner */}
       {fallbackBanner && (
         <AudioFallbackBanner
@@ -116,7 +116,7 @@ export function DriverPaymentDashboardPage() {
 
       {/* Header */}
       <header className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Payment Dashboard
         </h1>
         <div className="mt-2 flex items-center gap-2">
@@ -126,12 +126,12 @@ export function DriverPaymentDashboardPage() {
             }`}
             aria-hidden="true"
           />
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-white/60">
             {isConnected ? 'Connected' : 'Disconnected'}
           </span>
         </div>
         {error && (
-          <p className="mt-1 text-sm text-red-600" role="alert">
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
             {error}
           </p>
         )}
@@ -141,7 +141,7 @@ export function DriverPaymentDashboardPage() {
       <main className="flex flex-1 flex-col gap-3" aria-label="Payment notifications">
         {notifications.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
-            <p className="text-center text-gray-500">
+            <p className="text-center text-gray-500 dark:text-white/40">
               No payments received yet. Waiting for confirmations…
             </p>
           </div>

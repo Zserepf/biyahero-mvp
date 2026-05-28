@@ -10,8 +10,7 @@ using BiyaHero.Api.Features.Auth.Logout;
 using BiyaHero.Api.Features.Auth.Me;
 using BiyaHero.Api.Features.Auth.Refresh;
 using BiyaHero.Api.Features.Auth.Register;
-using BiyaHero.Api.Features.Auth.VerifyEmail;
-using BiyaHero.Api.Features.Common;
+using BiyaHero.Api.Features.Auth.VerifyEmail;using BiyaHero.Api.Features.Common;
 using BiyaHero.Api.Features.Common.FreeTierMonitor;
 using BiyaHero.Api.Features.Health;
 using BiyaHero.Api.Features.Fare;
@@ -155,6 +154,9 @@ var app = builder.Build();
 app.UseCors();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+// Native WebSocket endpoint for local development (replaces AWS API Gateway WS)
+app.MapLocalWebSocketEndpoint();
+
 app.MapHealthCheckEndpoint();
 
 // Auth endpoints
@@ -165,6 +167,9 @@ app.MapLogoutEndpoint();
 app.MapRefreshEndpoint();
 app.MapMeEndpoint();
 app.MapUpdateLanguagePreferenceEndpoint();
+
+// Dev-only endpoints (disabled in Production)
+app.MapDevSeedEndpoint();
 
 // I18n endpoints
 app.MapMissingKeysEndpoint();
@@ -194,6 +199,9 @@ app.MapPromoteUserEndpoint();
 
 app.Run();
 
+[JsonSerializable(typeof(BiyaHero.Api.Features.Auth.Register.DevSeedRequest))]
+[JsonSerializable(typeof(BiyaHero.Api.Features.Common.Exceptions.ErrorResponse))]
+[JsonSerializable(typeof(BiyaHero.Api.Features.Common.Exceptions.ErrorDetail))]
 [JsonSerializable(typeof(HealthCheckResponse))]
 [JsonSerializable(typeof(DependencyStatus))]
 [JsonSerializable(typeof(RegisterRequest))]

@@ -37,16 +37,16 @@ export function VoteRoutePanel({ routeId, voteCounts }: VoteRoutePanelProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-gray-800">Is this route still accurate?</h3>
+    <div className="flex flex-col gap-3 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 p-4">
+      <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Is this route still accurate?</h3>
 
       {/* Vote counts */}
       <div className="flex items-center gap-4 text-sm">
-        <span className="flex items-center gap-1 text-green-700">
+        <span className="flex items-center gap-1 text-green-700 dark:text-green-400">
           <span aria-hidden="true">✓</span>
           <span>{voteCounts.stillAccurate} say yes</span>
         </span>
-        <span className="flex items-center gap-1 text-red-700">
+        <span className="flex items-center gap-1 text-red-700 dark:text-red-400">
           <span aria-hidden="true">✗</span>
           <span>{voteCounts.noLongerAccurate} say no</span>
         </span>
@@ -59,7 +59,7 @@ export function VoteRoutePanel({ routeId, voteCounts }: VoteRoutePanelProps) {
             type="button"
             onClick={() => handleVote('still_accurate')}
             disabled={voteRoute.isPending}
-            className="flex-1 min-h-[44px] rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 disabled:bg-gray-400"
+            className="flex-1 min-h-[44px] rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 dark:focus:ring-green-500/40 disabled:bg-gray-400"
             aria-label="Vote: route is still accurate"
           >
             Still Accurate
@@ -68,21 +68,21 @@ export function VoteRoutePanel({ routeId, voteCounts }: VoteRoutePanelProps) {
             type="button"
             onClick={() => handleVote('no_longer_accurate')}
             disabled={voteRoute.isPending}
-            className="flex-1 min-h-[44px] rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:bg-gray-400"
+            className="flex-1 min-h-[44px] rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 dark:focus:ring-red-500/40 disabled:bg-gray-400"
             aria-label="Vote: route is no longer accurate"
           >
             No Longer Accurate
           </button>
         </div>
       ) : (
-        <p className="text-sm text-green-700" role="status" aria-live="polite">
+        <p className="text-sm text-green-700 dark:text-green-400" role="status" aria-live="polite">
           Thank you for your vote!
         </p>
       )}
 
       {/* Error */}
       {voteError && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
           {voteError}
         </p>
       )}

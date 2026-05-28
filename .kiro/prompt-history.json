@@ -18,5 +18,93 @@
     {
         "timestamp":  "2026-05-27T00",
         "prompt":  "Create the tasks for biyahero-mvp"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "what should be seen by the commuter, driver, moderator, and the super admin?"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "how about to those na guest?"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "this is what the guest has. include this to our matrix. and it looks bad because they're redundant."
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "its good but what i mean is. in the login page,, there are two buttons that redirects to one feature.theres two buttons for the fare calculator and two buttons for the browse routes."
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "next. fix the websocket issue"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "okay bro. investigate and fix the websocket issue."
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "its so bothering that the fare calculator card andd browse route cards are not in the center then since this is the guest landing  page. maybe add more information. based from the requirement. "
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "this is not needed."
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "here's the commuter viewthennn here's the driver viewthey're BLANK"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "man, these ui's are lame bro T__T and the driver dashboard is broken."
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "there's still no map showing"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "these windows are not consistent. in the url. it must be unique like role/feature (e.g commuter/fare calculator)the ui of this window is inconsistent and lame"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "continue fixing"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "continue fixing where you left"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "just continue fixing"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "continue fixing the ui"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "continue fixing the ui"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "continue fixing the remaining ui"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "what are the remaining tasks?"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "yes plwase~"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "yes plwase~"
+    },
+    {
+        "timestamp":  "2026-05-28T00",
+        "prompt":  "do it bro T__T"
     }
 ]
