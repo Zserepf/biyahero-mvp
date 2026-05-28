@@ -57,14 +57,16 @@ tests/load/       k6 load test scripts
 
 ## Quick Start
 
-### 1. Clone and set up environment variables
+### 1. Clone and set up environment variables (optional)
+
+The frontend defaults to `http://localhost:5000` for the API and `ws://localhost:5000/ws` for WebSockets, so a `.env.local` file is only needed if your backend runs on a different host or port.
 
 ```bash
 cd apps/web
-cp .env.local.example .env.local
+cp .env.local.example .env.local   # optional — defaults work out of the box
 ```
 
-Edit `apps/web/.env.local`:
+If you need to override the defaults, edit `apps/web/.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000
@@ -227,10 +229,12 @@ k6 run heatmap-aggregation.js
 
 ### Frontend (`apps/web/.env.local`)
 
-| Variable | Description | Default |
-|----------|-------------|---------|
+| Variable | Description | Default (used when unset) |
+|----------|-------------|---------------------------|
 | `NEXT_PUBLIC_API_URL` | Backend API base URL | `http://localhost:5000` |
 | `NEXT_PUBLIC_WS_URL` | WebSocket endpoint URL | `ws://localhost:5000/ws` |
+
+> **Note:** The frontend will start without a `.env.local` file — it falls back to the defaults above automatically.
 
 ### Backend (`apps/api/BiyaHero.Api/appsettings.Development.json`)
 

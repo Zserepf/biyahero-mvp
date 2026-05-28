@@ -32,9 +32,19 @@ export function useCalculateFare(): UseCalculateFareReturn {
     setResult(null);
 
     try {
+      // Transform to match backend's flat coordinate format
+      const payload = {
+        originLat: data.origin.lat,
+        originLng: data.origin.lng,
+        destinationLat: data.destination.lat,
+        destinationLng: data.destination.lng,
+        vehicleType: data.vehicleType.toLowerCase(),
+        discountCategory: data.discountCategory || 'regular',
+      };
+
       const response = await apiClient.post<FareCalculateResponse>(
         API_ENDPOINTS.FARE.CALCULATE,
-        data,
+        payload,
       );
 
       setResult(response.data);

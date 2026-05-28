@@ -12,18 +12,16 @@ interface Env {
   WS_URL: string;
 }
 
-function requireEnv(key: string): string {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(
-      `Missing required environment variable: ${key}. ` +
-        `Add it to your .env.local file.`,
-    );
-  }
-  return value;
+const DEFAULTS: Record<string, string> = {
+  NEXT_PUBLIC_API_URL: 'http://localhost:5000',
+  NEXT_PUBLIC_WS_URL: 'ws://localhost:5000/ws',
+};
+
+function getEnv(key: string): string {
+  return process.env[key] || DEFAULTS[key] || '';
 }
 
 export const env: Env = {
-  API_URL: requireEnv('NEXT_PUBLIC_API_URL'),
-  WS_URL: requireEnv('NEXT_PUBLIC_WS_URL'),
+  API_URL: getEnv('NEXT_PUBLIC_API_URL'),
+  WS_URL: getEnv('NEXT_PUBLIC_WS_URL'),
 };

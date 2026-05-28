@@ -37,6 +37,18 @@ using WaypointDto = BiyaHero.Api.Features.Routing.GetRoute.WaypointDto;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
+// CORS — allow the frontend to call the API
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
@@ -86,8 +98,8 @@ builder.Services.AddScoped<FareCalculateHandler>();
 builder.Services.AddSingleton<IVerificationTokenStore, InMemoryVerificationTokenStore>();
 builder.Services.AddSingleton<IAmazonSimpleEmailService>(sp =>
     new AmazonSimpleEmailServiceClient(Amazon.RegionEndpoint.APSoutheast1));
-builder.Services.AddSingleton<IEmailService, SesEmailService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddSingleton<IEmailService, NoOpEmailService>();
+builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 builder.Services.AddScoped<IRouteRepository, RouteRepository>();
 builder.Services.AddScoped<IRouteVoteRepository, RouteVoteRepository>();
 builder.Services.AddScoped<RegisterHandler>();
@@ -140,6 +152,7 @@ builder.Services.AddScoped<HealthCheckHandler>();
 var app = builder.Build();
 
 // Global exception handling — translates BiyaHeroException to standard error envelope
+app.UseCors();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapHealthCheckEndpoint();
