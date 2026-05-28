@@ -12,12 +12,12 @@ import { apiClient, ACCESS_TOKEN_KEY } from '@/infrastructure/api/client';
 import { API_ENDPOINTS } from '@/infrastructure/api/endpoints';
 import { useLanguagePreferenceStore } from '@/infrastructure/stores/language-preference-store';
 import { ApiError } from '@/shared/types/api';
-import type { LoginRequest, LoginResponse } from './types';
+import type { LoginRequest, LoginResponse, UserRole } from './types';
 
 const REFRESH_TOKEN_KEY = 'biyahero_refresh_token';
 
 interface UseLoginReturn {
-  login: (data: LoginRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<UserRole>;
   isLoading: boolean;
   error: string | null;
 }
@@ -28,7 +28,7 @@ export function useLogin(): UseLoginReturn {
   const syncFromServer = useLanguagePreferenceStore((s) => s.syncFromServer);
 
   const login = useCallback(
-    async (data: LoginRequest) => {
+    async (data: LoginRequest): Promise<UserRole> => {
       setIsLoading(true);
       setError(null);
 
@@ -51,6 +51,15 @@ export function useLogin(): UseLoginReturn {
         }
 
         await syncFromServer();
+
+        // Normalize role to lowercase snake_case (matches frontend convention)
+        const normalizedRole = user.role
+          .replace(/([A-Z])/g, (m: string, l: string, offset: number) =>
+            offset > 0 ? '_' + l.toLowerCase() : l.toLowerCase()
+          )
+          .toLowerCase() as UserRole;
+
+        return normalizedRole;
       } catch (err) {
         if (err instanceof ApiError) {
           setError(err.message);

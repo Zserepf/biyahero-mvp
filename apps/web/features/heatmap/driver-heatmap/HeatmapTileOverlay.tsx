@@ -108,7 +108,7 @@ export function HeatmapTileOverlay({ tile }: HeatmapTileOverlayProps) {
     >
       <Tooltip direction="top" sticky>
         <span className="text-sm font-medium">
-          {tile.demandCount} waiting • {tile.vehicleType.replace('_', ' ')}
+          {tile.demandCount} waiting • {tile.vehicleType?.replace('_', ' ') ?? 'unknown'}
         </span>
       </Tooltip>
     </Rectangle>

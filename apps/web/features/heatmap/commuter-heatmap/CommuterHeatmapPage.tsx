@@ -13,6 +13,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import Link from 'next/link';
 import { useCommuterHeatmap } from './useCommuterHeatmap';
 import type { VehicleType } from './types';
 
@@ -132,7 +133,18 @@ export function CommuterHeatmapPage() {
     <main className="flex h-full flex-col bg-gray-50 dark:bg-slate-900">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 px-4 py-3 backdrop-blur-md">
-        <h1 className="text-base font-bold text-gray-900 dark:text-white">Waiting for a Ride</h1>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white transition hover:bg-gray-200 dark:hover:bg-white/20"
+            aria-label="Back to home"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </Link>
+          <h1 className="text-base font-bold text-gray-900 dark:text-white">Waiting for a Ride</h1>
+        </div>
         <ConnectionBadge status={status} />
       </div>
 

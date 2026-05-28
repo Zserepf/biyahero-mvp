@@ -281,21 +281,23 @@ public static class LocalWebSocketEndpoint
 
     private static List<object> BuildHeatmapTiles()
     {
-        // Group active pings by approximate geohash7 (simplified: round to 3 decimal places)
-        var groups = ActivePings.Values
-            .GroupBy(p => $"{Math.Round(p.Lat, 3)},{Math.Round(p.Lng, 3)}")
-            .Select(g => new
+        // Group active pings by geohash7 + vehicleType so each tile has a single vehicleType
+        // (matches the frontend HeatmapTile type: { geohash7, demandCount, vehicleType })
+        var tiles = ActivePings.Values
+            .GroupBy(p => new
             {
-                geohash7 = g.Key.Replace(",", "_").Replace(".", "d"),
-                lat = g.Average(p => p.Lat),
-                lng = g.Average(p => p.Lng),
-                demandCount = g.Count(),
-                vehicleTypes = g.Select(p => p.VehicleType).Distinct().ToList()
+                geohash7 = BiyaHero.Api.Services.GeohashEncoder.EncodeForTile(p.Lat, p.Lng),
+                vehicleType = p.VehicleType
             })
-            .Cast<object>()
+            .Select(g => (object)new
+            {
+                geohash7 = g.Key.geohash7,
+                demandCount = g.Count(),
+                vehicleType = g.Key.vehicleType
+            })
             .ToList();
 
-        return groups;
+        return tiles;
     }
 
     private static async Task SendAsync(WebSocket ws, object payload)

@@ -9,9 +9,10 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { loginSchema, type LoginFormData } from './schema';
 import { useLogin } from './useLogin';
+import type { UserRole } from './types';
 
 interface LoginFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (role?: UserRole) => void;
 }
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
@@ -49,8 +50,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     }
 
     try {
-      await login({ email: formData.email, password: formData.password });
-      onSuccess?.();
+      const role = await login({ email: formData.email, password: formData.password });
+      onSuccess?.(role);
     } catch {
       // Error is handled by the hook
     }
