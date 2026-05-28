@@ -33,6 +33,33 @@ infra/            AWS CDK (C#) infrastructure-as-code
 tests/load/       k6 load test scripts
 ```
 
+## Routing & Navigation
+
+After login, users are redirected to their role-specific dashboard:
+
+| Role | Dashboard URL | Description |
+|------|--------------|-------------|
+| `commuter` | `/commuter/dashboard` | Mobile-first PWA shell with bottom nav (Home, Routes, Fare, Profile) |
+| `driver` | `/driver/dashboard` | Full-screen interactive heatmap with bottom-sheet tabs (Payments, Routes, Profile) |
+| `moderator` / `super_admin` | `/admin/users` | Admin user management panel |
+| Guest | `/` | Landing page with feature highlights and sign-up CTA |
+
+### Commuter Dashboard (`/commuter/dashboard`)
+
+Fixed-height PWA shell — the bottom nav never scrolls away. Tabs switch content in-page:
+- **Home** — "I'm Waiting Here" primary CTA + Fare Calculator and Plot Route quick actions
+- **Routes** — links to browse and plot community routes
+- **Fare** — inline summary + link to the full fare calculator
+- **Profile** — avatar, account info, language, and logout
+
+### Driver Dashboard (`/driver/dashboard`)
+
+Full-screen interactive heatmap as the primary view. Overlays never block map interaction:
+- **Heatmap tab** — live demand tiles, legend positioned above the bottom nav
+- **Payments tab** — bottom sheet with payment alert info and history
+- **Routes tab** — bottom sheet with links to browse/plot routes
+- **Profile tab** — bottom sheet with account info and logout
+
 ## Features
 
 | Feature | Description |
@@ -42,6 +69,7 @@ tests/load/       k6 load test scripts
 | Demand Heatmap | Real-time via WebSocket with geohash-based aggregation |
 | Payment Notifications | Anti-123 system — webhook ingestion → WebSocket push |
 | Authentication | Argon2id password hashing + JWT (HS256) with refresh tokens |
+| Role-Based Dashboards | Commuter and Driver each get a dedicated mobile-first PWA shell |
 | Bilingual UI | English/Filipino via next-intl |
 | Offline-First | PWA with IndexedDB write queue for unreliable connections |
 
@@ -153,18 +181,36 @@ PWA available at `http://localhost:3000`
 │   │       │   ├── Heatmap/         # Demand heatmap (REST + WebSocket)
 │   │       │   ├── Payments/        # Payment webhook + notifications
 │   │       │   └── Routes/          # Route CRUD + spatial search
+│   │       ├── WebSockets/          # Local WS endpoint (dev), route/demand handlers
 │   │       ├── Infrastructure/      # DB connections, repositories, services
 │   │       └── Program.cs           # Application entry point
 │   │
 │   └── web/
-│       ├── src/
-│       │   ├── app/                 # Next.js app router pages
-│       │   ├── components/          # Shared UI components
-│       │   ├── features/            # Feature-specific modules
-│       │   ├── hooks/               # Custom React hooks
-│       │   ├── lib/                 # Utilities and API client
-│       │   ├── stores/              # Zustand state stores
-│       │   └── messages/            # i18n translation files (en/fil)
+│       ├── app/                     # Next.js App Router pages
+│       │   ├── commuter/
+│       │   │   ├── dashboard/       # Commuter PWA home shell
+│       │   │   ├── fare/            # Fare calculator page
+│       │   │   ├── routes/          # Route list + create pages
+│       │   │   └── waiting/         # "I'm Waiting Here" page
+│       │   ├── driver/
+│       │   │   ├── dashboard/       # Driver PWA home shell (full-screen heatmap)
+│       │   │   └── heatmap/         # Standalone heatmap page
+│       │   ├── admin/               # Admin user management
+│       │   └── (auth)/              # Login, register, verify pages
+│       ├── features/                # Feature-sliced modules
+│       │   ├── auth/                # Login, register, useMe, useLogout
+│       │   ├── dashboard/
+│       │   │   ├── commuter/        # CommuterDashboard component
+│       │   │   └── driver/          # DriverDashboard + DriverHeatmapMap
+│       │   ├── fare/                # Fare calculator feature
+│       │   ├── heatmap/
+│       │   │   ├── commuter-heatmap/ # Commuter waiting/ping feature
+│       │   │   └── driver-heatmap/   # Driver heatmap tiles + WebSocket hook
+│       │   ├── routes/              # Route list + create features
+│       │   ├── admin/               # Admin user list, suspend, promote
+│       │   └── payment/             # Payment alert feature
+│       ├── infrastructure/          # API client, stores, config, offline queue
+│       ├── shared/                  # Reusable UI primitives (Button, ThemeToggle…)
 │       ├── public/                  # Static assets + PWA manifest
 │       └── tests/                   # Vitest + Playwright tests
 │
@@ -303,6 +349,20 @@ k6 run heatmap-aggregation.js
 | **Amazon CloudFront** | CDN for the Next.js PWA static assets. Serves the app from edge locations closest to Philippine users, reducing latency for the initial page load. |
 | **Amazon RDS (PostgreSQL)** | Managed PostgreSQL with PostGIS. Handles automated backups, minor version patching, and Multi-AZ failover without manual DBA work. |
 | **Docker Compose** | Local development infrastructure. Spins up PostgreSQL + PostGIS and DynamoDB Local in containers so developers can run the full stack without cloud credentials. |
+
+## Known Issues & Recent Fixes
+
+### Heatmap signal not appearing on driver map (fixed)
+`LocalWebSocketEndpoint.BuildHeatmapTiles()` was emitting tiles with a `vehicleTypes` array and a fake string key instead of the shape the frontend expected (`{ geohash7, demandCount, vehicleType }`). Fixed to use `GeohashEncoder.EncodeForTile()` and group by `(geohash7, vehicleType)`.
+
+### Login always redirected to `/` regardless of role (fixed)
+`useLogin` now returns the normalized role after a successful login. `LoginPage` uses a `getRoleRedirect()` function to send drivers to `/driver/dashboard`, admins to `/admin/users`, and commuters to `/commuter/dashboard`.
+
+### Login page redesign
+Split-panel layout: brand hero on the left (desktop), clean form on the right. Replaces the previous homepage-style layout.
+
+### Commuter waiting page missing back button (fixed)
+Added a `←` back-to-home button in the header, consistent with all other feature pages.
 
 ## License
 
