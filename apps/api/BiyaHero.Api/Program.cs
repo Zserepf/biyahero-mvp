@@ -150,6 +150,9 @@ builder.Services.AddScoped<HealthCheckHandler>();
 
 var app = builder.Build();
 
+// Seed dev accounts (SuperAdmin, Moderator, etc.) on every Development startup
+await DevSeeder.SeedAsync(app.Services, app.Environment);
+
 // Global exception handling — translates BiyaHeroException to standard error envelope
 app.UseCors();
 app.UseMiddleware<ExceptionHandlingMiddleware>();

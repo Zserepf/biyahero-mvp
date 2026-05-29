@@ -27,7 +27,7 @@ export function CreateRoutePage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Route Submitted!</h2>
           <p className="mt-3 text-sm text-gray-500 dark:text-white/60">
-            Your route has been saved with status <span className="font-semibold text-amber-500 dark:text-amber-400">unverified</span> and will be reviewed by the community.
+            Your route has been saved and is now live on the map.
           </p>
           <div className="mt-8 flex flex-col gap-3">
             <button
@@ -78,7 +78,7 @@ export function CreateRoutePage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <p className="text-sm text-blue-600 dark:text-blue-300">
-            Tap the map to add at least <strong>2 waypoints</strong> in order. Routes are saved as <span className="text-amber-500 dark:text-amber-400 font-medium">unverified</span> until a moderator approves them.
+            Tap the map to add at least <strong>2 waypoints</strong> in order.
           </p>
         </div>
 

@@ -12,9 +12,8 @@ import { ThemeToggle } from '@/shared/components/ThemeToggle';
 import type { UserRole } from './types';
 
 function getRoleRedirect(role: UserRole): string {
-  if (role === 'driver') return '/driver/heatmap';
-  if (role === 'moderator' || role === 'super_admin') return '/admin/users';
-  return '/commuter/fare';
+  if (role === 'driver') return '/driver/dashboard';
+  return '/commuter/dashboard';
 }
 
 export function LoginPage() {

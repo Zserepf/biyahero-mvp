@@ -68,7 +68,7 @@ public sealed class CreateRouteHandler
             updatedAt: now,
             name: request.Name,
             vehicleType: vehicleType,
-            status: RouteStatus.Unverified,
+            status: RouteStatus.Verified,
             createdBy: userId,
             baseFare: request.BaseFare,
             waypoints: waypoints);

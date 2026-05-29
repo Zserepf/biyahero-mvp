@@ -6,13 +6,12 @@
  * Layout:
  *  - Map fills 100% of the screen and is always interactive
  *  - Floating top bar (pointer-events only on its own elements)
- *  - Bottom nav switches between in-page panels (no navigation)
+ *  - Bottom nav: Heatmap · Payments · Profile  (Routes removed — drivers only need the heatmap)
  *  - Panels slide up as a bottom sheet over the map
  */
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMe } from '@/features/auth/useMe';
 import { useLogout } from '@/features/auth/useLogout';
@@ -29,7 +28,7 @@ const DriverHeatmapMap = dynamic(
   },
 );
 
-type Tab = 'map' | 'payments' | 'routes' | 'profile';
+type Tab = 'map' | 'payments' | 'profile';
 
 // ─── Payments panel ───────────────────────────────────────────────────────────
 
@@ -69,50 +68,6 @@ function PaymentsPanel() {
         </svg>
         <p className="text-sm font-medium text-white/40">No payments yet today</p>
         <p className="mt-1 text-xs text-white/25">Confirmations will appear here in real time</p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Routes panel ─────────────────────────────────────────────────────────────
-
-function RoutesPanel() {
-  return (
-    <div className="flex flex-col gap-4 px-4 py-5">
-      <div>
-        <h2 className="text-base font-bold text-white">Routes</h2>
-        <p className="mt-0.5 text-xs text-white/50">Browse and contribute community transit routes</p>
-      </div>
-      <div className="flex flex-col gap-2">
-        {[
-          {
-            label: 'Browse all routes',
-            sub: 'Jeepney, UV Express, Bus, Tricycle',
-            icon: '🗺️',
-            href: '/commuter/routes',
-          },
-          {
-            label: 'Plot a new route',
-            sub: 'Add a missing route to the map',
-            icon: '✏️',
-            href: '/commuter/routes/create',
-          },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="flex min-h-[60px] items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition hover:bg-white/10 active:scale-[0.98]"
-          >
-            <span className="text-2xl">{item.icon}</span>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white">{item.label}</p>
-              <p className="text-xs text-white/40">{item.sub}</p>
-            </div>
-            <svg className="h-4 w-4 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        ))}
       </div>
     </div>
   );
@@ -167,7 +122,7 @@ function ProfilePanel({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-// ─── Nav config ───────────────────────────────────────────────────────────────
+// ─── Nav config (Heatmap · Payments · Profile) ────────────────────────────────
 
 const navItems: { id: Tab; label: string; icon: React.ReactNode }[] = [
   {
@@ -185,15 +140,6 @@ const navItems: { id: Tab; label: string; icon: React.ReactNode }[] = [
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-      </svg>
-    ),
-  },
-  {
-    id: 'routes',
-    label: 'Routes',
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
       </svg>
     ),
   },
@@ -225,15 +171,14 @@ export function DriverDashboard() {
   const showPanel = activeTab !== 'map';
 
   return (
-    // position:relative container — map is absolute underneath, overlays are absolute on top
     <div className="relative h-screen w-full overflow-hidden bg-slate-900">
 
-      {/* ── Map — absolute, fills everything, always interactive ─────── */}
+      {/* Map — absolute, fills everything, always interactive */}
       <div className="absolute inset-0 z-0">
         <DriverHeatmapMap />
       </div>
 
-      {/* ── Floating top bar — pointer-events only on its own children ── */}
+      {/* Floating top bar — pointer-events only on its own children */}
       <div className="pointer-events-none absolute left-0 right-0 top-0 z-20 px-4 pt-4">
         <div className="pointer-events-auto flex items-center justify-between">
           {/* Status pill */}
@@ -249,7 +194,7 @@ export function DriverDashboard() {
             </div>
           </div>
 
-          {/* Avatar — tapping opens profile tab */}
+          {/* Avatar — tapping opens profile panel */}
           {!isLoading && (
             <button
               onClick={() => setActiveTab(activeTab === 'profile' ? 'map' : 'profile')}
@@ -262,21 +207,18 @@ export function DriverDashboard() {
         </div>
       </div>
 
-      {/* ── Bottom sheet panel (Payments / Routes / Profile) ─────────── */}
+      {/* Bottom sheet panel (Payments / Profile) */}
       {showPanel && (
         <div className="absolute bottom-[64px] left-0 right-0 z-20 max-h-[55vh] overflow-y-auto rounded-t-3xl border-t border-white/10 bg-slate-900/95 shadow-2xl backdrop-blur-md">
-          {/* Drag handle */}
           <div className="flex justify-center pt-3 pb-1">
             <div className="h-1 w-10 rounded-full bg-white/20" />
           </div>
-
           {activeTab === 'payments' && <PaymentsPanel />}
-          {activeTab === 'routes' && <RoutesPanel />}
           {activeTab === 'profile' && <ProfilePanel onLogout={handleLogout} />}
         </div>
       )}
 
-      {/* ── Bottom nav ───────────────────────────────────────────────── */}
+      {/* Bottom nav — Heatmap · Payments · Profile */}
       <nav className="absolute bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-slate-900/95 backdrop-blur-md">
         <div className="flex items-center justify-around px-2 py-2">
           {navItems.map((item) => {

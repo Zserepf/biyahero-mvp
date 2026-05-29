@@ -37,10 +37,10 @@ export function RegisterPage() {
           <p className="mt-3 text-sm text-gray-500 dark:text-white/60">
             Your account for{' '}
             <span className="font-semibold text-gray-900 dark:text-white">{registeredEmail}</span>{' '}
-            is ready. Check your email to verify, then log in.
+            is ready. You can log in now.
           </p>
           <button
-            onClick={() => router.push('/login?registered=true')}
+            onClick={() => router.push('/login')}
             className="mt-8 min-h-[44px] w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             Go to Log In

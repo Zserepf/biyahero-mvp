@@ -73,21 +73,66 @@ Full-screen interactive heatmap as the primary view. Overlays never block map in
 | Bilingual UI | English/Filipino via next-intl |
 | Offline-First | PWA with IndexedDB write queue for unreliable connections |
 
+## One-Command Start
+
+Two PowerShell scripts handle the entire local stack — infrastructure, API, and frontend.
+
+```powershell
+# Start everything (.NET API + Next.js PWA, + Docker infra if available)
+.\start.ps1
+
+# Stop everything cleanly
+.\stop.ps1
+```
+
+| URL | Service |
+|-----|---------|
+| `http://localhost:3000` | Next.js PWA (frontend) |
+| `http://localhost:5000` | .NET 8 API (backend) |
+| `http://localhost:8000` | DynamoDB Local (requires Docker) |
+| `localhost:5432` | PostgreSQL + PostGIS (requires Docker) |
+
+What `start.ps1` does:
+1. Checks that .NET SDK, Node.js, and npm are installed — prints install links for anything missing
+2. **If Docker is available:** starts PostgreSQL + DynamoDB Local via Docker Compose and waits for them to be healthy, then injects the correct DB credentials automatically
+3. **If Docker is not installed:** starts the API and frontend anyway, and prints instructions for installing Docker Desktop or native PostgreSQL
+4. Starts the .NET API in a new window
+5. Installs frontend `node_modules` if not already present, then starts Next.js in a new window
+6. Prints a summary with all service URLs
+
+`stop.ps1` reads the PIDs saved by `start.ps1` and shuts down the API, frontend, and Docker containers in one step.
+
+> **Windows only.** On macOS/Linux, use the manual steps in the [Quick Start](#quick-start) section below.
+
+### No Docker? No problem
+
+`start.ps1` will still launch the API and frontend even without Docker. Database-backed features (login, register, routes, heatmap) won't work until you add a database, but the UI is fully browsable. To get the full stack running without Docker, install PostgreSQL natively:
+
+1. Download from [postgresql.org/download/windows](https://www.postgresql.org/download/windows/)
+2. Create a database named `biyahero` with user `postgres` / password `postgres`
+3. Re-run `.\start.ps1` — the API will connect automatically
+
+---
+
 ## Prerequisites
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| .NET SDK | 8.0+ | Backend API |
-| Node.js | 18+ | Frontend PWA |
-| npm | 9+ | Package management |
-| Docker | Latest | PostgreSQL + DynamoDB Local |
-| k6 | Latest | Load testing (optional) |
+| Tool | Version | Required | Purpose |
+|------|---------|----------|---------|
+| .NET SDK | 8.0+ | ✅ | Backend API |
+| Node.js | 18+ | ✅ | Frontend PWA |
+| npm | 9+ | ✅ | Package management |
+| Docker Desktop | Latest | ⚠️ Recommended | PostgreSQL + DynamoDB Local (see [No Docker?](#no-docker-no-problem)) |
+| k6 | Latest | ❌ Optional | Load testing |
 
 ## Quick Start
 
-### 1. Clone and set up environment variables (optional)
+> **Recommended:** Use `.\start.ps1` from the [One-Command Start](#one-command-start) section above — it handles all steps automatically.
 
-The frontend defaults to `http://localhost:5000` for the API and `ws://localhost:5000/ws` for WebSockets, so a `.env.local` file is only needed if your backend runs on a different host or port.
+The manual steps below are for macOS/Linux or if you prefer to run each service individually.
+
+### 1. Set up environment variables (optional)
+
+The frontend defaults to `http://localhost:5000` for the API and `ws://localhost:5000/ws` for WebSockets. A `.env.local` file is only needed if your backend runs on a different host or port.
 
 ```bash
 cd apps/web
@@ -104,15 +149,29 @@ NEXT_PUBLIC_WS_URL=ws://localhost:5000/ws
 ### 2. Start infrastructure (PostgreSQL + DynamoDB Local)
 
 ```bash
-docker-compose -f docker-compose.test.yml up -d
+docker compose -f docker-compose.test.yml up -d
+```
+
+The Docker Compose file uses `biyahero_test`/`test_password` as the PostgreSQL credentials. Pass them to the API via environment variables so no config file edits are needed:
+
+```bash
+# macOS / Linux
+export ConnectionStrings__Postgres="Host=localhost;Database=biyahero_test;Username=biyahero_test;Password=test_password"
+export ConnectionStrings__DynamoDB="http://localhost:8000"
+export ASPNETCORE_ENVIRONMENT=Development
+```
+
+```powershell
+# Windows PowerShell
+$env:ConnectionStrings__Postgres = "Host=localhost;Database=biyahero_test;Username=biyahero_test;Password=test_password"
+$env:ConnectionStrings__DynamoDB = "http://localhost:8000"
+$env:ASPNETCORE_ENVIRONMENT      = "Development"
 ```
 
 ### 3. Run the backend API
 
 ```bash
 cd apps/api
-dotnet restore
-dotnet build
 dotnet run --project BiyaHero.Api
 ```
 
