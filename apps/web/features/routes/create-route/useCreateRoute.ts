@@ -16,6 +16,14 @@ import type { CreateRouteRequest, CreateRouteResponse, RouteDto } from '../types
 
 export const ROUTES_QUERY_KEY = ['routes'] as const;
 
+const VEHICLE_TYPE_API_MAP: Record<string, string> = {
+  jeepney: 'Jeepney',
+  bus: 'Bus',
+  uv_express: 'UV_Express',
+  tricycle: 'Tricycle',
+  walk: 'Jeepney', // Walk segments stored as Jeepney type; name prefix "🚶 " distinguishes them
+};
+
 export function useCreateRoute() {
   const queryClient = useQueryClient();
 
@@ -23,7 +31,17 @@ export function useCreateRoute() {
     mutationFn: async (data: CreateRouteRequest) => {
       const response = await apiClient.post<CreateRouteResponse>(
         API_ENDPOINTS.ROUTES.CREATE,
-        data,
+        {
+          Name: data.name,
+          VehicleType: VEHICLE_TYPE_API_MAP[data.vehicleType] ?? data.vehicleType,
+          BaseFare: data.baseFare,
+          Waypoints: data.waypoints.map((wp) => ({
+            Latitude: wp.lat,
+            Longitude: wp.lng,
+            SequenceOrder: wp.position,
+            Label: wp.name ?? null,
+          })),
+        },
       );
       return response.data;
     },

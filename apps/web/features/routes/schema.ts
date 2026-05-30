@@ -39,7 +39,7 @@ export const createRouteSchema = z.object({
     .string()
     .min(1, 'forms.required')
     .max(200, 'routes.nameTooLong'),
-  vehicleType: z.enum(['jeepney', 'uv_express', 'bus'], {
+  vehicleType: z.enum(['jeepney', 'uv_express', 'bus', 'tricycle', 'walk'], {
     message: 'forms.required',
   }),
   baseFare: z

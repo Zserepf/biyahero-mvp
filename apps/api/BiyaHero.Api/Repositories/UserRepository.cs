@@ -16,6 +16,19 @@ public class UserRepository : BasePostgresRepository<User>, IUserRepository
 
     private readonly IDbConnectionFactory _connectionFactory;
 
+    // ─── Enum → Postgres snake_case helpers ──────────────────────────────
+
+    /// <summary>Converts PascalCase C# enum name to snake_case for Postgres enums.</summary>
+    private static string ToSnakeCase(string value)
+    {
+        // Insert underscore before each uppercase letter (except the first), then lowercase all
+        var result = System.Text.RegularExpressions.Regex.Replace(value, "(?<!^)([A-Z])", "_$1");
+        return result.ToLowerInvariant();
+    }
+
+    private static string RoleToDb(UserRole role) => ToSnakeCase(role.ToString());
+    private static string StatusToDb(UserStatus status) => ToSnakeCase(status.ToString());
+
     public UserRepository(IDbConnectionFactory connectionFactory)
         : base(connectionFactory)
     {
@@ -36,11 +49,27 @@ public class UserRepository : BasePostgresRepository<User>, IUserRepository
             updatedAt: (DateTime)row.updated_at,
             email: (string)row.email,
             passwordHash: (string)row.password_hash,
-            role: Enum.Parse<UserRole>((string)row.role, ignoreCase: true),
-            status: Enum.Parse<UserStatus>((string)row.status, ignoreCase: true),
+            role: ParseRole((string)row.role),
+            status: ParseStatus((string)row.status),
             displayName: (string)row.display_name,
             languagePreference: (string)row.language_preference
         );
+    }
+
+    /// <summary>Converts Postgres snake_case enum value back to C# PascalCase enum.</summary>
+    private static UserRole ParseRole(string value)
+    {
+        // super_admin → SuperAdmin, commuter → Commuter, etc.
+        var pascal = System.Text.RegularExpressions.Regex.Replace(
+            value, @"(^|_)([a-z])", m => m.Groups[2].Value.ToUpperInvariant());
+        return Enum.Parse<UserRole>(pascal, ignoreCase: true);
+    }
+
+    private static UserStatus ParseStatus(string value)
+    {
+        var pascal = System.Text.RegularExpressions.Regex.Replace(
+            value, @"(^|_)([a-z])", m => m.Groups[2].Value.ToUpperInvariant());
+        return Enum.Parse<UserStatus>(pascal, ignoreCase: true);
     }
 
     // ─── INSERT ───────────────────────────────────────────────────────────
@@ -49,7 +78,7 @@ public class UserRepository : BasePostgresRepository<User>, IUserRepository
     {
         return """
             INSERT INTO users (id, email, password_hash, role, status, display_name, language_preference, created_at, updated_at)
-            VALUES (@Id, @Email, @PasswordHash, @Role, @Status, @DisplayName, @LanguagePreference, @CreatedAt, @UpdatedAt)
+            VALUES (@Id, @Email, @PasswordHash, @Role::user_role, @Status::user_status, @DisplayName, @LanguagePreference, @CreatedAt, @UpdatedAt)
             """;
     }
 
@@ -60,8 +89,8 @@ public class UserRepository : BasePostgresRepository<User>, IUserRepository
             entity.Id,
             entity.Email,
             entity.PasswordHash,
-            Role = entity.Role.ToString(),
-            Status = entity.Status.ToString(),
+            Role = RoleToDb(entity.Role),
+            Status = StatusToDb(entity.Status),
             entity.DisplayName,
             entity.LanguagePreference,
             entity.CreatedAt,
@@ -77,8 +106,8 @@ public class UserRepository : BasePostgresRepository<User>, IUserRepository
             UPDATE users
             SET email = @Email,
                 password_hash = @PasswordHash,
-                role = @Role,
-                status = @Status,
+                role = @Role::user_role,
+                status = @Status::user_status,
                 display_name = @DisplayName,
                 language_preference = @LanguagePreference,
                 updated_at = @UpdatedAt
@@ -93,8 +122,8 @@ public class UserRepository : BasePostgresRepository<User>, IUserRepository
             entity.Id,
             entity.Email,
             entity.PasswordHash,
-            Role = entity.Role.ToString(),
-            Status = entity.Status.ToString(),
+            Role = RoleToDb(entity.Role),
+            Status = StatusToDb(entity.Status),
             entity.DisplayName,
             entity.LanguagePreference,
             entity.UpdatedAt
@@ -189,7 +218,7 @@ public class UserRepository : BasePostgresRepository<User>, IUserRepository
 
         const string sql = """
             UPDATE users
-            SET status = @Status,
+            SET status = @Status::user_status,
                 updated_at = @UpdatedAt
             WHERE id = @Id
             RETURNING id, email, password_hash, role, status, display_name, language_preference, created_at, updated_at
@@ -198,7 +227,7 @@ public class UserRepository : BasePostgresRepository<User>, IUserRepository
         var row = await dbConnection.QueryFirstOrDefaultAsync(sql, new
         {
             Id = userId,
-            Status = UserStatus.Suspended.ToString(),
+            Status = StatusToDb(UserStatus.Suspended),
             UpdatedAt = now
         });
 
@@ -222,7 +251,7 @@ public class UserRepository : BasePostgresRepository<User>, IUserRepository
 
         const string sql = """
             UPDATE users
-            SET role = @Role,
+            SET role = @Role::user_role,
                 updated_at = @UpdatedAt
             WHERE id = @Id
             RETURNING id, email, password_hash, role, status, display_name, language_preference, created_at, updated_at
@@ -231,7 +260,7 @@ public class UserRepository : BasePostgresRepository<User>, IUserRepository
         var row = await dbConnection.QueryFirstOrDefaultAsync(sql, new
         {
             Id = userId,
-            Role = newRole.ToString(),
+            Role = RoleToDb(newRole),
             UpdatedAt = now
         });
 

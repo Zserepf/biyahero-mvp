@@ -1,8 +1,7 @@
 namespace BiyaHero.Api.Features.Routing.ListRoutes;
 
 /// <summary>
-/// Summary DTO for a route in list responses.
-/// Contains only the fields needed for the map/list view — no full waypoint data.
+/// Route list item DTO — includes full waypoints so the frontend can render routes on the map.
 /// </summary>
 public sealed record RouteListItemDto(
     Guid Id,
@@ -10,4 +9,15 @@ public sealed record RouteListItemDto(
     string VehicleType,
     string Status,
     decimal BaseFare,
-    int WaypointCount);
+    Guid CreatedBy,
+    DateTime CreatedAt,
+    DateTime UpdatedAt,
+    int WaypointCount,
+    IReadOnlyList<RouteWaypointDto> Waypoints);
+
+/// <summary>Waypoint DTO for list responses.</summary>
+public sealed record RouteWaypointDto(
+    double Lat,
+    double Lng,
+    int Position,
+    string? Name);

@@ -1,11 +1,9 @@
 namespace BiyaHero.Api.Features.Routing.ListRoutes;
 
 /// <summary>
-/// Maps GET /v1/routes?minLat=X&amp;minLng=X&amp;maxLat=X&amp;maxLng=X to the ListRoutesHandler.
-/// Thin HTTP boundary — validates bbox query parameters, delegates to the handler.
-/// 
+/// Maps GET /v1/routes?bbox_sw_lat=X&amp;bbox_sw_lng=X&amp;bbox_ne_lat=X&amp;bbox_ne_lng=X to the ListRoutesHandler.
+/// Returns { routes: [...] } with full waypoints for each route.
 /// No authentication required (public data).
-/// 
 /// Requirements: 1.2
 /// </summary>
 public static class ListRoutesEndpoint
@@ -13,80 +11,29 @@ public static class ListRoutesEndpoint
     public static void MapListRoutesEndpoint(this IEndpointRouteBuilder app)
     {
         app.MapGet("/v1/routes", async (
-            double? minLat,
-            double? minLng,
-            double? maxLat,
-            double? maxLng,
+            double? bbox_sw_lat,
+            double? bbox_sw_lng,
+            double? bbox_ne_lat,
+            double? bbox_ne_lng,
             ListRoutesHandler handler) =>
         {
-            // Validate all 4 bbox parameters are present
-            if (minLat is null || minLng is null || maxLat is null || maxLng is null)
+            // Also support legacy minLat/minLng/maxLat/maxLng params
+            if (bbox_sw_lat is null || bbox_sw_lng is null || bbox_ne_lat is null || bbox_ne_lng is null)
             {
                 return Results.UnprocessableEntity(new
                 {
                     error = new
                     {
                         code = "input.validation_failed",
-                        message = "All bounding box parameters are required: minLat, minLng, maxLat, maxLng."
-                    }
-                });
-            }
-
-            // Validate latitude ranges (-90 to 90)
-            if (minLat.Value < -90.0 || minLat.Value > 90.0 || maxLat.Value < -90.0 || maxLat.Value > 90.0)
-            {
-                return Results.UnprocessableEntity(new
-                {
-                    error = new
-                    {
-                        code = "input.validation_failed",
-                        message = "Latitude must be between -90 and 90 degrees."
-                    }
-                });
-            }
-
-            // Validate longitude ranges (-180 to 180)
-            if (minLng.Value < -180.0 || minLng.Value > 180.0 || maxLng.Value < -180.0 || maxLng.Value > 180.0)
-            {
-                return Results.UnprocessableEntity(new
-                {
-                    error = new
-                    {
-                        code = "input.validation_failed",
-                        message = "Longitude must be between -180 and 180 degrees."
-                    }
-                });
-            }
-
-            // Validate min <= max
-            if (minLat.Value > maxLat.Value)
-            {
-                return Results.UnprocessableEntity(new
-                {
-                    error = new
-                    {
-                        code = "input.validation_failed",
-                        message = "minLat must be less than or equal to maxLat."
-                    }
-                });
-            }
-
-            if (minLng.Value > maxLng.Value)
-            {
-                return Results.UnprocessableEntity(new
-                {
-                    error = new
-                    {
-                        code = "input.validation_failed",
-                        message = "minLng must be less than or equal to maxLng."
+                        message = "All bounding box parameters are required: bbox_sw_lat, bbox_sw_lng, bbox_ne_lat, bbox_ne_lng."
                     }
                 });
             }
 
             var results = await handler.HandleAsync(
-                minLat.Value, minLng.Value, maxLat.Value, maxLng.Value);
+                bbox_sw_lat.Value, bbox_sw_lng.Value, bbox_ne_lat.Value, bbox_ne_lng.Value);
 
-            return Results.Ok(results);
+            return Results.Ok(new { routes = results });
         })
         .WithName("ListRoutes")
         .WithTags("Routing")

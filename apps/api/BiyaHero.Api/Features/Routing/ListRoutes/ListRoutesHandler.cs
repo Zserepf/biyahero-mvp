@@ -4,7 +4,7 @@ namespace BiyaHero.Api.Features.Routing.ListRoutes;
 
 /// <summary>
 /// Business logic for listing routes within a bounding box (GET /v1/routes).
-/// Delegates spatial query to the RouteRepository and maps results to summary DTOs.
+/// Returns full route data including waypoints so the frontend can render them on the map.
 /// Requirements: 1.2
 /// </summary>
 public sealed class ListRoutesHandler
@@ -16,10 +16,6 @@ public sealed class ListRoutesHandler
         _routeRepository = routeRepository;
     }
 
-    /// <summary>
-    /// Queries routes whose waypoints intersect the given bounding box.
-    /// Returns a list of route summaries (no full waypoint data).
-    /// </summary>
     public async Task<IReadOnlyList<RouteListItemDto>> HandleAsync(
         double minLat, double minLon, double maxLat, double maxLon)
     {
@@ -28,10 +24,21 @@ public sealed class ListRoutesHandler
         return routes.Select(r => new RouteListItemDto(
             Id: r.Id,
             Name: r.Name,
-            VehicleType: r.VehicleType.ToString(),
-            Status: r.Status.ToString(),
+            VehicleType: r.VehicleType.ToString().ToLowerInvariant(),
+            Status: r.Status.ToString().ToLowerInvariant(),
             BaseFare: r.BaseFare,
-            WaypointCount: r.Waypoints.Count
+            CreatedBy: r.CreatedBy,
+            CreatedAt: r.CreatedAt,
+            UpdatedAt: r.UpdatedAt,
+            WaypointCount: r.Waypoints.Count,
+            Waypoints: r.Waypoints
+                .OrderBy(w => w.SequenceOrder)
+                .Select(w => new RouteWaypointDto(
+                    Lat: w.Latitude,
+                    Lng: w.Longitude,
+                    Position: w.SequenceOrder,
+                    Name: w.Label))
+                .ToList()
         )).ToList();
     }
 }

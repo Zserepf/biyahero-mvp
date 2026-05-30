@@ -1,59 +1,140 @@
 'use client';
 
 /**
- * RouteListPage — Browse community routes on a map.
+ * RouteListPage — Browse community routes.
+ *
+ * Map starts clean (no pins). Routes are listed as journey names only.
+ * Tapping a journey expands it to show its legs AND zooms the map to fit
+ * all waypoints across all legs of that journey.
+ *
  * Requirements: 1.2
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { RouteMap } from '../components/RouteMap';
+import dynamic from 'next/dynamic';
 import { useRouteList } from './useRouteList';
 import { ThemeToggle } from '@/shared/components/ThemeToggle';
-import type { BboxQuery, RouteDto } from '../types';
+import type { BboxQuery, RouteDto, Waypoint } from '../types';
+
+const RouteMap = dynamic(
+  () => import('../components/RouteMap').then((m) => m.RouteMap),
+  { ssr: false, loading: () => <div className="h-[300px] rounded-2xl bg-white/5 animate-pulse" /> },
+);
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const VEHICLE_ICONS: Record<string, string> = {
-  Jeepney: '🚌',
-  Bus: '🚍',
-  UV_Express: '🚐',
-  Tricycle: '🛺',
+  jeepney:    '🚌',
+  bus:        '🚍',
+  uv_express: '🚐',
+  tricycle:   '🛺',
+  walk:       '🚶',
+};
+
+const VEHICLE_LABELS: Record<string, string> = {
+  jeepney:    'Jeepney',
+  bus:        'Bus',
+  uv_express: 'UV Express',
+  tricycle:   'Tricycle',
+  walk:       'Walk',
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  verified:   'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30',
-  unverified: 'bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/30',
+  verified:   'bg-emerald-500/20 text-emerald-400',
+  unverified: 'bg-amber-500/20 text-amber-400',
 };
 
-interface RouteListPageProps {
-  onRouteSelect?: (route: RouteDto) => void;
+// ─── Journey grouping ─────────────────────────────────────────────────────────
+
+function extractJourneyName(routeName: string): string {
+  return routeName.replace(/\s*—\s*Leg\s+\d+.*$/i, '').trim();
 }
 
-export function RouteListPage({ onRouteSelect }: RouteListPageProps) {
+interface Journey {
+  name: string;
+  legs: RouteDto[];
+  status: string;
+}
+
+function groupIntoJourneys(routes: RouteDto[]): Journey[] {
+  const map = new Map<string, RouteDto[]>();
+  for (const route of routes) {
+    const key = extractJourneyName(route.name);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(route);
+  }
+  return Array.from(map.entries()).map(([name, legs]) => ({
+    name,
+    legs: legs.sort((a, b) => {
+      const na = parseInt(a.name.match(/Leg\s+(\d+)/i)?.[1] ?? '0');
+      const nb = parseInt(b.name.match(/Leg\s+(\d+)/i)?.[1] ?? '0');
+      return na - nb;
+    }),
+    status: legs.some((l) => l.status === 'verified') ? 'verified' : 'unverified',
+  }));
+}
+
+// Extract leg label from route name: "Leg 1 (🚌 Jeepney)" or fallback
+function extractLegLabel(routeName: string): string | null {
+  const match = routeName.match(/Leg\s+\d+\s*\(([^)]+)\)/i);
+  return match ? match[1].trim() : null;
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export function RouteListPage() {
   const [bbox, setBbox] = useState<BboxQuery | null>(null);
   const [search, setSearch] = useState('');
-  const [vehicleFilter, setVehicleFilter] = useState('all');
+  const [expandedJourney, setExpandedJourney] = useState<string | null>(null);
+
   const { data: routes, isLoading } = useRouteList(bbox);
 
   const handleBoundsChange = useCallback(
     (bounds: { swLat: number; swLng: number; neLat: number; neLng: number }) => {
-      setBbox({ bboxSwLat: bounds.swLat, bboxSwLng: bounds.swLng, bboxNeLat: bounds.neLat, bboxNeLng: bounds.neLng });
+      setBbox({
+        bboxSwLat: bounds.swLat,
+        bboxSwLng: bounds.swLng,
+        bboxNeLat: bounds.neLat,
+        bboxNeLng: bounds.neLng,
+      });
     },
     [],
   );
 
-  const allWaypoints =
-    routes?.flatMap((route) =>
-      route.waypoints.map((wp) => ({
-        ...wp,
-        name: `${route.name} — ${wp.name || `Stop ${wp.position + 1}`}`,
-      })),
-    ) ?? [];
+  const journeys = useMemo(() => {
+    const all = routes ?? [];
+    const filtered = search
+      ? all.filter((r) =>
+          extractJourneyName(r.name).toLowerCase().includes(search.toLowerCase()),
+        )
+      : all;
+    return groupIntoJourneys(filtered);
+  }, [routes, search]);
 
-  const filtered = (routes ?? []).filter((r) => {
-    const matchSearch = !search || r.name.toLowerCase().includes(search.toLowerCase());
-    const matchVehicle = vehicleFilter === 'all' || r.vehicleType === vehicleFilter;
-    return matchSearch && matchVehicle;
-  });
+  // Collect ALL waypoints from the expanded journey's legs for the map
+  const mapWaypoints = useMemo((): Waypoint[] => {
+    if (!expandedJourney) return [];
+    const journey = journeys.find((j) => j.name === expandedJourney);
+    if (!journey) return [];
+
+    // Merge all legs' waypoints with an offset so they all render
+    let offset = 0;
+    return journey.legs.flatMap((leg) => {
+      const wps = leg.waypoints.map((wp) => ({
+        ...wp,
+        position: wp.position + offset,
+      }));
+      offset += leg.waypoints.length;
+      return wps;
+    });
+  }, [expandedJourney, journeys]);
+
+  const toggleJourney = (name: string) => {
+    setExpandedJourney((prev) => (prev === name ? null : name));
+  };
+
+  const expandedJourneyData = journeys.find((j) => j.name === expandedJourney) ?? null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-blue-950 dark:to-slate-900">
@@ -72,7 +153,7 @@ export function RouteListPage({ onRouteSelect }: RouteListPageProps) {
             </Link>
             <div>
               <h1 className="text-base font-bold text-gray-900 dark:text-white leading-none">Browse Routes</h1>
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-white/50">Community-sourced transit map</p>
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-white/50">Community transit map</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -91,99 +172,162 @@ export function RouteListPage({ onRouteSelect }: RouteListPageProps) {
       </header>
 
       <div className="mx-auto max-w-5xl px-4 py-5 space-y-4">
-        {/* Search + filter bar */}
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search routes by name…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="min-h-[44px] w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 py-2.5 pl-10 pr-4 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/30 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition"
-            />
-          </div>
-          <select
-            value={vehicleFilter}
-            onChange={(e) => setVehicleFilter(e.target.value)}
-            className="min-h-[44px] rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition sm:w-44"
-          >
-            <option value="all">All Vehicles</option>
-            <option value="Jeepney">Jeepney</option>
-            <option value="Bus">Bus</option>
-            <option value="UV_Express">UV Express</option>
-            <option value="Tricycle">Tricycle</option>
-          </select>
+        {/* Search */}
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search routes…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="min-h-[44px] w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 py-2.5 pl-10 pr-4 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/30 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition"
+          />
         </div>
 
-        {/* Map */}
+        {/* Map — clean slate until a journey is selected */}
         <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10">
           <RouteMap
-            waypoints={allWaypoints}
+            waypoints={mapWaypoints}
             editable={false}
             onBoundsChange={handleBoundsChange}
-            height="380px"
+            height="300px"
+            scrollWheelZoom={false}
           />
+          {!expandedJourney && (
+            <p className="border-t border-gray-100 dark:border-white/5 bg-white/60 dark:bg-slate-900/60 px-3 py-1.5 text-center text-[11px] text-gray-400 dark:text-white/30">
+              Tap a journey below to see it on the map
+            </p>
+          )}
+          {expandedJourney && (
+            <p className="border-t border-gray-100 dark:border-white/5 bg-white/60 dark:bg-slate-900/60 px-3 py-1.5 text-center text-[11px] text-blue-500 dark:text-blue-400">
+              Showing: {expandedJourney}
+            </p>
+          )}
         </div>
 
         {/* Loading */}
         {isLoading && (
-          <div className="flex items-center gap-2 text-sm text-gray-400 dark:text-white/40" aria-live="polite">
+          <div className="flex items-center gap-2 text-sm text-gray-400 dark:text-white/40">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
             Loading routes…
           </div>
         )}
 
-        {/* Route list */}
-        {filtered.length > 0 && (
+        {/* Journey list */}
+        {journeys.length > 0 && (
           <div className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-widest text-gray-400 dark:text-white/30">
-              {filtered.length} route{filtered.length !== 1 ? 's' : ''} in view
+              {journeys.length} journey{journeys.length !== 1 ? 's' : ''}
             </p>
-            <ul className="flex flex-col gap-2" aria-label="Routes in current map view">
-              {filtered.map((route) => (
-                <li key={route.id}>
-                  <button
-                    type="button"
-                    onClick={() => onRouteSelect?.(route)}
-                    className="group flex w-full min-h-[56px] items-center justify-between rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-4 py-3 text-left transition hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                    aria-label={`View route: ${route.name}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl" aria-hidden="true">
-                        {VEHICLE_ICONS[route.vehicleType] ?? '🚌'}
-                      </span>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{route.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-white/40">
-                          {route.vehicleType.replace('_', ' ')} • {route.waypoints.length} stops
-                        </p>
-                      </div>
+
+            <ul className="flex flex-col gap-2">
+              {journeys.map((journey) => {
+                const isExpanded = expandedJourney === journey.name;
+
+                return (
+                  <li key={journey.name}>
+                    <div className={`rounded-2xl border transition-all ${
+                      isExpanded
+                        ? 'border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/5'
+                        : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5'
+                    }`}>
+
+                      {/* Journey header — tap to expand/collapse */}
+                      <button
+                        type="button"
+                        onClick={() => toggleJourney(journey.name)}
+                        className="flex w-full min-h-[60px] items-center justify-between px-4 py-3 text-left"
+                        aria-expanded={isExpanded}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Vehicle icons for all legs */}
+                          <div className="flex shrink-0">
+                            {[...new Set(journey.legs.map((l) => l.vehicleType))]
+                              .slice(0, 3)
+                              .map((vt) => (
+                                <span key={vt} className="text-xl">{VEHICLE_ICONS[vt] ?? '🚌'}</span>
+                              ))}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                              {journey.name}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-white/40">
+                              {journey.legs.length === 1
+                                ? `${VEHICLE_LABELS[journey.legs[0].vehicleType] ?? journey.legs[0].vehicleType} · ${journey.legs[0].waypoints.length} stops`
+                                : `${journey.legs.length} legs`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 ml-2">
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${STATUS_STYLES[journey.status] ?? STATUS_STYLES.unverified}`}>
+                            {journey.status}
+                          </span>
+                          <svg
+                            className={`h-4 w-4 text-gray-400 dark:text-white/30 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </button>
+
+                      {/* Expanded legs */}
+                      {isExpanded && (
+                        <div className="border-t border-blue-500/20 px-4 pb-4 pt-3 flex flex-col gap-2">
+                          {journey.legs.map((leg, legIdx) => {
+                            const legLabel = extractLegLabel(leg.name)
+                              ?? `${VEHICLE_ICONS[leg.vehicleType] ?? ''} ${VEHICLE_LABELS[leg.vehicleType] ?? leg.vehicleType}`;
+
+                            return (
+                              <div key={leg.id} className="flex items-center gap-3 rounded-xl border border-white/10 dark:border-white/5 bg-white/50 dark:bg-white/5 px-3 py-2.5">
+                                {/* Leg number */}
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
+                                  {legIdx + 1}
+                                </span>
+
+                                {/* Vehicle icon */}
+                                <span className="text-lg shrink-0">
+                                  {VEHICLE_ICONS[leg.vehicleType] ?? '🚌'}
+                                </span>
+
+                                {/* Label + fare */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
+                                    {legLabel}
+                                  </p>
+                                  <p className="text-xs text-gray-500 dark:text-white/40">
+                                    {leg.waypoints.length} stops
+                                  </p>
+                                </div>
+
+                                {/* Fare */}
+                                {leg.vehicleType !== 'walk' && (
+                                  <span className="shrink-0 rounded-lg bg-blue-500/10 px-2 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
+                                    ₱{leg.baseFare}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold capitalize ${STATUS_STYLES[route.status] ?? STATUS_STYLES.unverified}`}>
-                        {route.status}
-                      </span>
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className="text-emerald-500 dark:text-emerald-400">✓ {route.voteCounts.stillAccurate}</span>
-                        <span className="text-red-500 dark:text-red-400">✗ {route.voteCounts.noLongerAccurate}</span>
-                      </div>
-                      <svg className="h-4 w-4 text-gray-300 dark:text-white/20 transition group-hover:text-gray-400 dark:group-hover:text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </button>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
 
-        {routes && routes.length === 0 && !isLoading && (
+        {/* Empty state */}
+        {!isLoading && journeys.length === 0 && (
           <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 py-12 text-center">
-            <p className="text-sm text-gray-400 dark:text-white/40">No routes in this area yet.</p>
+            <p className="text-sm text-gray-400 dark:text-white/40">
+              {search ? `No routes matching "${search}"` : 'No routes yet.'}
+            </p>
             <Link
               href="/commuter/routes/create"
               className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"

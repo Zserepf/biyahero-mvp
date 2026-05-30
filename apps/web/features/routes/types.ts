@@ -6,7 +6,7 @@
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
-export type VehicleType = 'jeepney' | 'uv_express' | 'bus';
+export type VehicleType = 'jeepney' | 'uv_express' | 'bus' | 'tricycle' | 'walk';
 
 export type RouteStatus = 'unverified' | 'verified';
 

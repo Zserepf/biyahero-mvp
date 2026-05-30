@@ -4,8 +4,10 @@
  * CommuterHeatmapPage — Page for commuters to signal "I'm waiting here."
  *
  * Displays a map centered on the commuter's current location (or Philippines center
- * as fallback). Provides a button to submit a demand-ping and a cancel button to
- * remove the active ping. WebSocket connects on mount and disconnects on unmount.
+ * as fallback). Shows the user's position with a distinct blue marker and nearby
+ * demand activity so commuters can see where others are waiting.
+ * Provides a button to submit a demand-ping and a cancel button to remove the active ping.
+ * WebSocket connects on mount and disconnects on unmount.
  *
  * Requirements: 4.1, 4.5, 9.1 (44×44px hit targets), 9.5 (accessible names)
  */
@@ -15,7 +17,10 @@ import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import Link from 'next/link';
 import { useCommuterHeatmap } from './useCommuterHeatmap';
+import { HeatmapTileOverlay } from '../driver-heatmap/HeatmapTileOverlay';
+import { useDriverHeatmap } from '../driver-heatmap/useDriverHeatmap';
 import type { VehicleType } from './types';
+import type { Bbox } from '../driver-heatmap/types';
 
 // Fix Leaflet default marker icon issue with bundlers
 const defaultIcon = L.icon({
@@ -26,6 +31,22 @@ const defaultIcon = L.icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
+});
+
+// Blue "You are here" marker
+const userLocationIcon = L.divIcon({
+  className: '',
+  html: `
+    <div style="
+      width: 20px; height: 20px;
+      background: #3b82f6;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.4), 0 2px 8px rgba(0,0,0,0.3);
+    "></div>
+  `,
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
 });
 
 L.Marker.prototype.options.icon = defaultIcon;
@@ -49,6 +70,37 @@ function MapCenterUpdater({ center }: { center: [number, number] }) {
   useEffect(() => {
     map.setView(center, map.getZoom());
   }, [center, map]);
+
+  return null;
+}
+
+// ─── Bbox emitter — subscribes heatmap to current map bounds ────────────────
+
+function BboxEmitter({ onBbox }: { onBbox: (b: Bbox) => void }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const emit = () => {
+      const b = map.getBounds();
+      onBbox({
+        swLat: b.getSouthWest().lat,
+        swLng: b.getSouthWest().lng,
+        neLat: b.getNorthEast().lat,
+        neLng: b.getNorthEast().lng,
+      });
+    };
+
+    // Emit once on mount after a short delay for Leaflet to initialise
+    const t = setTimeout(emit, 200);
+    map.on('moveend', emit);
+    map.on('zoomend', emit);
+
+    return () => {
+      clearTimeout(t);
+      map.off('moveend', emit);
+      map.off('zoomend', emit);
+    };
+  }, [map, onBbox]);
 
   return null;
 }
@@ -82,10 +134,13 @@ export function CommuterHeatmapPage() {
   const { status, activePing, submitDemandPing, cancelDemand, error } =
     useCommuterHeatmap();
 
+  const { tiles, subscribeToBbox } = useDriverHeatmap({ enabled: true });
+
   const [userLocation, setUserLocation] = useState<[number, number]>(PH_CENTER);
   const [vehicleType, setVehicleType] = useState<VehicleType>('jeepney');
   const [locationError, setLocationError] = useState<string | null>(null);
   const [geoLoading, setGeoLoading] = useState(true);
+  const [showLegend, setShowLegend] = useState(false);
 
   // ─── Get user's current location ──────────────────────────────────────
 
@@ -127,6 +182,10 @@ export function CommuterHeatmapPage() {
     cancelDemand();
   }, [cancelDemand]);
 
+  const handleBbox = useCallback((b: Bbox) => {
+    subscribeToBbox(b);
+  }, [subscribeToBbox]);
+
   // ─── Render ────────────────────────────────────────────────────────────
 
   return (
@@ -145,7 +204,20 @@ export function CommuterHeatmapPage() {
           </Link>
           <h1 className="text-base font-bold text-gray-900 dark:text-white">Waiting for a Ride</h1>
         </div>
-        <ConnectionBadge status={status} />
+        <div className="flex items-center gap-2">
+          {/* Legend toggle */}
+          <button
+            type="button"
+            onClick={() => setShowLegend((v) => !v)}
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white/70 transition hover:bg-gray-200 dark:hover:bg-white/20"
+            aria-label="Toggle map legend"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+            </svg>
+          </button>
+          <ConnectionBadge status={status} />
+        </div>
       </div>
 
       {/* Error messages */}
@@ -184,10 +256,17 @@ export function CommuterHeatmapPage() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             <MapCenterUpdater center={userLocation} />
+            <BboxEmitter onBbox={handleBbox} />
 
-            {/* User location marker */}
+            {/* Demand heatmap tiles — shows where commuters are waiting */}
+            {tiles.map((tile) => (
+              <HeatmapTileOverlay key={tile.geohash7} tile={tile} />
+            ))}
+
+            {/* User location — distinct blue dot */}
             <Marker
               position={userLocation}
+              icon={userLocationIcon}
               title="Your location"
             />
 
@@ -206,10 +285,63 @@ export function CommuterHeatmapPage() {
             )}
           </MapContainer>
         )}
+
+        {/* Map legend overlay */}
+        {showLegend && (
+          <div className="absolute bottom-4 right-4 z-[1000] rounded-2xl bg-white/95 dark:bg-slate-900/95 p-4 shadow-xl backdrop-blur-sm ring-1 ring-black/10 dark:ring-white/10 min-w-[160px]">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-white/40">Map Legend</p>
+            <div className="flex flex-col gap-2.5">
+              {/* You */}
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-white"
+                  style={{ background: '#3b82f6', boxShadow: '0 0 0 2px rgba(59,130,246,0.4)' }}
+                />
+                <span className="text-xs text-gray-700 dark:text-white/70">You</span>
+              </div>
+              {/* Active ping */}
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="h-3.5 w-3.5 flex-shrink-0 rounded-full opacity-60"
+                  style={{ background: '#fbbf24', border: '2px solid #f59e0b' }}
+                />
+                <span className="text-xs text-gray-700 dark:text-white/70">Your ping</span>
+              </div>
+              {/* Demand heat */}
+              <div className="mt-1 border-t border-gray-100 dark:border-white/10 pt-2">
+                <p className="mb-1.5 text-[10px] font-semibold text-gray-400 dark:text-white/30">Nearby demand</p>
+                {[
+                  { color: '#ef4444', label: 'Very High' },
+                  { color: '#f97316', label: 'High' },
+                  { color: '#f59e0b', label: 'Moderate' },
+                  { color: '#eab308', label: 'Low' },
+                  { color: '#84cc16', label: 'Minimal' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-2 mb-1">
+                    <span className="h-2.5 w-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: item.color }} />
+                    <span className="text-xs text-gray-600 dark:text-white/60">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Controls */}
       <div className="border-t border-black/10 dark:border-white/10 bg-white dark:bg-slate-900 px-4 py-4">
+        {/* Demand summary */}
+        {tiles.length > 0 && (
+          <div className="mb-3 flex items-center gap-2 rounded-xl border border-blue-500/20 bg-blue-500/10 px-3 py-2">
+            <svg className="h-4 w-4 shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <p className="text-xs text-blue-600 dark:text-blue-400">
+              <span className="font-semibold">{tiles.reduce((s, t) => s + t.demandCount, 0)}</span> commuter{tiles.reduce((s, t) => s + t.demandCount, 0) !== 1 ? 's' : ''} waiting nearby
+            </p>
+          </div>
+        )}
+
         {/* Vehicle type selector */}
         <div className="mb-3">
           <label

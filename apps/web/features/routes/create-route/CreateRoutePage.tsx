@@ -9,11 +9,54 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { CreateRouteForm } from './CreateRouteForm';
 import { ThemeToggle } from '@/shared/components/ThemeToggle';
+import { useMe } from '@/features/auth/useMe';
 
 export function CreateRoutePage() {
   const [submitted, setSubmitted] = useState(false);
+  const { user, isLoading } = useMe();
 
   const handleSuccess = useCallback(() => setSubmitted(true), []);
+
+  // ── Auth gate — show friendly prompt instead of a cryptic API error ──
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-blue-950 dark:to-slate-900">
+        <span className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-blue-950 dark:to-slate-900 px-4">
+        <div className="w-full max-w-sm text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/10 ring-1 ring-blue-500/20">
+            <svg className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Sign in to plot a route</h2>
+          <p className="mt-2 text-sm text-gray-500 dark:text-white/50">
+            You need to be logged in to contribute routes to the community map.
+          </p>
+          <div className="mt-6 flex flex-col gap-3">
+            <Link
+              href="/login"
+              className="min-h-[44px] w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 text-center"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/register"
+              className="min-h-[44px] w-full rounded-xl border border-gray-200 dark:border-white/20 bg-gray-100 dark:bg-white/10 px-4 py-3 font-semibold text-gray-800 dark:text-white text-center transition hover:bg-gray-200 dark:hover:bg-white/20"
+            >
+              Create Account
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (

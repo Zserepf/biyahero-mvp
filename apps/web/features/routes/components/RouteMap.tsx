@@ -9,7 +9,7 @@
  * Requirements: 1.1, 1.2, 9.1 (44×44px hit targets)
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -18,7 +18,7 @@ import {
   useMapEvents,
   useMap,
 } from 'react-leaflet';
-import L from 'leaflet';
+import L, { type Map as LeafletMap } from 'leaflet';
 import type { Waypoint } from '../types';
 
 // Fix Leaflet default marker icon issue with bundlers
@@ -37,23 +37,20 @@ L.Marker.prototype.options.icon = defaultIcon;
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface RouteMapProps {
-  /** Waypoints to display on the map */
   waypoints?: Waypoint[];
-  /** Whether clicking the map adds a waypoint */
   editable?: boolean;
-  /** Callback when a new waypoint is added via click */
-  onWaypointAdd?: (lat: number, lng: number) => void;
-  /** Callback when the map bounds change (for bbox queries) */
+  onWaypointAdd?: (lat: number, lng: number, name?: string) => void;
   onBoundsChange?: (bounds: {
     swLat: number;
     swLng: number;
     neLat: number;
     neLng: number;
   }) => void;
-  /** Map height CSS value */
   height?: string;
-  /** Additional CSS class */
   className?: string;
+  mapRef?: React.MutableRefObject<LeafletMap | null>;
+  /** Whether scroll wheel zooms the map. Default true for edit mode, false for browse. */
+  scrollWheelZoom?: boolean;
 }
 
 // ─── Philippines center coordinates ──────────────────────────────────────────
@@ -70,9 +67,7 @@ function MapClickHandler({
 }) {
   useMapEvents({
     click(e) {
-      if (onWaypointAdd) {
-        onWaypointAdd(e.latlng.lat, e.latlng.lng);
-      }
+      onWaypointAdd?.(e.latlng.lat, e.latlng.lng);
     },
   });
   return null;
@@ -124,18 +119,35 @@ function BoundsChangeHandler({
 
 function FitBounds({ waypoints }: { waypoints: Waypoint[] }) {
   const map = useMap();
-  const fitted = useRef(false);
 
   useEffect(() => {
-    if (waypoints.length >= 2 && !fitted.current) {
-      const bounds = L.latLngBounds(
-        waypoints.map((wp) => [wp.lat, wp.lng] as [number, number]),
-      );
-      map.fitBounds(bounds, { padding: [50, 50] });
-      fitted.current = true;
+    if (waypoints.length >= 1) {
+      if (waypoints.length === 1) {
+        map.setView([waypoints[0].lat, waypoints[0].lng], 15, { animate: true });
+      } else {
+        const bounds = L.latLngBounds(
+          waypoints.map((wp) => [wp.lat, wp.lng] as [number, number]),
+        );
+        map.fitBounds(bounds, { padding: [50, 50], animate: true });
+      }
+    } else {
+      // No waypoints — reset to Philippines overview
+      map.setView([12.8797, 121.774], 6, { animate: true });
     }
-  }, [waypoints, map]);
+  // Re-run whenever the waypoint set changes (new journey selected)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(waypoints.map((w) => `${w.lat},${w.lng}`))]);
 
+  return null;
+}
+
+// ─── Map ref capturer ────────────────────────────────────────────────────────
+
+function MapRefCapture({ mapRef }: { mapRef: React.MutableRefObject<LeafletMap | null> }) {
+  const map = useMap();
+  useEffect(() => {
+    mapRef.current = map;
+  }, [map, mapRef]);
   return null;
 }
 
@@ -148,10 +160,16 @@ export function RouteMap({
   onBoundsChange,
   height = '400px',
   className = '',
+  mapRef,
+  scrollWheelZoom = true,
 }: RouteMapProps) {
   const polylinePositions = waypoints
     .sort((a, b) => a.position - b.position)
     .map((wp) => [wp.lat, wp.lng] as [number, number]);
+
+  // Internal ref used when caller doesn't provide one
+  const internalRef = useRef<LeafletMap | null>(null);
+  const resolvedRef = mapRef ?? internalRef;
 
   return (
     <div
@@ -164,18 +182,19 @@ export function RouteMap({
         center={PH_CENTER}
         zoom={PH_ZOOM}
         className="h-full w-full"
-        scrollWheelZoom={true}
+        scrollWheelZoom={scrollWheelZoom}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        <MapRefCapture mapRef={resolvedRef} />
         {editable && <MapClickHandler onWaypointAdd={onWaypointAdd} />}
         {onBoundsChange && <BoundsChangeHandler onBoundsChange={onBoundsChange} />}
         {waypoints.length >= 2 && <FitBounds waypoints={waypoints} />}
 
-        {/* Render waypoint markers */}
+        {/* Waypoint markers */}
         {waypoints.map((wp, index) => (
           <Marker
             key={`wp-${wp.position}-${index}`}
@@ -184,7 +203,7 @@ export function RouteMap({
           />
         ))}
 
-        {/* Render polyline connecting waypoints */}
+        {/* Polyline */}
         {polylinePositions.length >= 2 && (
           <Polyline
             positions={polylinePositions}

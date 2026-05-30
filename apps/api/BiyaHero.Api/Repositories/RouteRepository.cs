@@ -36,12 +36,29 @@ public class RouteRepository : BasePostgresRepository<Route>, IRouteRepository
             createdAt: (DateTime)row.created_at,
             updatedAt: (DateTime)row.updated_at,
             name: (string)row.name,
-            vehicleType: Enum.Parse<VehicleType>((string)row.vehicle_type, ignoreCase: true),
-            status: Enum.Parse<RouteStatus>((string)row.status, ignoreCase: true),
+            vehicleType: ParseVehicleType((string)row.vehicle_type),
+            status: ParseRouteStatus((string)row.status),
             createdBy: (Guid)row.created_by,
             baseFare: (decimal)row.base_fare,
             waypoints: new List<Waypoint>()
         );
+    }
+
+    private static VehicleType ParseVehicleType(string value)
+    {
+        // uv_express → UV_Express, jeepney → Jeepney
+        var pascal = System.Text.RegularExpressions.Regex.Replace(
+            value, @"(^|_)([a-z])", m => m.Groups[2].Value.ToUpperInvariant());
+        // Handle UV_Express special case
+        pascal = pascal.Replace("Uv", "UV");
+        return Enum.Parse<VehicleType>(pascal, ignoreCase: true);
+    }
+
+    private static RouteStatus ParseRouteStatus(string value)
+    {
+        var pascal = System.Text.RegularExpressions.Regex.Replace(
+            value, @"(^|_)([a-z])", m => m.Groups[2].Value.ToUpperInvariant());
+        return Enum.Parse<RouteStatus>(pascal, ignoreCase: true);
     }
 
     private static Waypoint MapToWaypoint(dynamic row)
@@ -60,7 +77,7 @@ public class RouteRepository : BasePostgresRepository<Route>, IRouteRepository
     {
         return """
             INSERT INTO routes (id, name, vehicle_type, status, created_by, base_fare, created_at, updated_at)
-            VALUES (@Id, @Name, @VehicleType, @Status, @CreatedBy, @BaseFare, @CreatedAt, @UpdatedAt)
+            VALUES (@Id, @Name, @VehicleType::vehicle_type, @Status::route_status, @CreatedBy, @BaseFare, @CreatedAt, @UpdatedAt)
             """;
     }
 
@@ -70,8 +87,8 @@ public class RouteRepository : BasePostgresRepository<Route>, IRouteRepository
         {
             entity.Id,
             entity.Name,
-            VehicleType = entity.VehicleType.ToString(),
-            Status = entity.Status.ToString(),
+            VehicleType = entity.VehicleType.ToString().ToLowerInvariant(),
+            Status = entity.Status.ToString().ToLowerInvariant(),
             entity.CreatedBy,
             entity.BaseFare,
             entity.CreatedAt,
@@ -86,8 +103,8 @@ public class RouteRepository : BasePostgresRepository<Route>, IRouteRepository
         return """
             UPDATE routes
             SET name = @Name,
-                vehicle_type = @VehicleType,
-                status = @Status,
+                vehicle_type = @VehicleType::vehicle_type,
+                status = @Status::route_status,
                 created_by = @CreatedBy,
                 base_fare = @BaseFare,
                 updated_at = @UpdatedAt
@@ -101,8 +118,8 @@ public class RouteRepository : BasePostgresRepository<Route>, IRouteRepository
         {
             entity.Id,
             entity.Name,
-            VehicleType = entity.VehicleType.ToString(),
-            Status = entity.Status.ToString(),
+            VehicleType = entity.VehicleType.ToString().ToLowerInvariant(),
+            Status = entity.Status.ToString().ToLowerInvariant(),
             entity.CreatedBy,
             entity.BaseFare,
             entity.UpdatedAt

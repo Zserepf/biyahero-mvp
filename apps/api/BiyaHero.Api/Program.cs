@@ -98,7 +98,7 @@ builder.Services.AddSingleton<IVerificationTokenStore, InMemoryVerificationToken
 builder.Services.AddSingleton<IAmazonSimpleEmailService>(sp =>
     new AmazonSimpleEmailServiceClient(Amazon.RegionEndpoint.APSoutheast1));
 builder.Services.AddSingleton<IEmailService, NoOpEmailService>();
-builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRouteRepository, RouteRepository>();
 builder.Services.AddScoped<IRouteVoteRepository, RouteVoteRepository>();
 builder.Services.AddScoped<RegisterHandler>();
@@ -225,6 +225,8 @@ app.Run();
 [JsonSerializable(typeof(FareCalculateResponse))]
 [JsonSerializable(typeof(RouteListItemDto))]
 [JsonSerializable(typeof(List<RouteListItemDto>))]
+[JsonSerializable(typeof(RouteWaypointDto))]
+[JsonSerializable(typeof(List<RouteWaypointDto>))]
 [JsonSerializable(typeof(RouteDetailDto))]
 [JsonSerializable(typeof(WaypointDto))]
 [JsonSerializable(typeof(List<WaypointDto>))]

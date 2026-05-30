@@ -29,10 +29,14 @@ public static class DevSeeder
         // Only run in Development
         if (!env.IsDevelopment()) return;
 
-        var config      = services.GetRequiredService<IConfiguration>();
-        var userRepo    = services.GetRequiredService<IUserRepository>();
-        var hasher      = services.GetRequiredService<IPasswordHasher>();
-        var logger      = services.GetRequiredService<ILogger<DevSeederMarker>>();
+        // Create a scope so scoped services (like UserRepository) can be resolved
+        using var scope = services.CreateScope();
+        var scopedServices = scope.ServiceProvider;
+
+        var config      = scopedServices.GetRequiredService<IConfiguration>();
+        var userRepo    = scopedServices.GetRequiredService<IUserRepository>();
+        var hasher      = scopedServices.GetRequiredService<IPasswordHasher>();
+        var logger      = scopedServices.GetRequiredService<ILogger<DevSeederMarker>>();
 
         var accounts = config
             .GetSection("DevSeed:Accounts")
